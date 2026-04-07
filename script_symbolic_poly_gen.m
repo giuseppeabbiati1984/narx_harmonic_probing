@@ -4,8 +4,8 @@ clear;  clc; %close all;
 
 %########### Develop Symbolic Functions ################
 Ord = "3" ;
-lagNumF = 10 ;
-lagNumZ = 10 ;
+lagNumF = 3 ;
+lagNumZ = 4 ;
 n = lagNumZ + lagNumF ; % total number of lags
 
 % Input

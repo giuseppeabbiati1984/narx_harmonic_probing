@@ -3,44 +3,30 @@ function H1_sol = fun_probing_H1(J0, J, nf, nz, w, dts)
 % different points on the frequency spectrum.
 % a, b - scaling factors on the output, input
 
-dt = dts ;
-t = 1000:dt:1000+dt*50;		% This parameter should cancel out. Make sure it's far from 0 to avoid infinities in the residual
-H0 = 0;
-
+%Point at which to evaluate the residual z = H2
+z1 = 1; % Point 1 for eval of residual
+z2 = 0; % Point 2 for eval of residual
 
 %% LTF Optimization
 H1_sol = ones( [1, numel(w)] ).*1e-5 +  1i*ones( [1, numel(w)] ).*1e-5 ;
-tol = 1e-9;    % solver tolerance
 
-
-% Initial guesses
-H1w1 = 1e4 + 1e4i ; dH1 = 1e-6 ;
 
 for i=1:1:numel(w)
-    w1 = w(i) ;
+    w1 = w(i) ; % rad/s
 
-    if i~=1
-        H1w1 = H1_sol(i-1) ; % Initial guess
-    end
+    [~, t] = fun_freq_finder(5*w1, 1); % Find the length of the signal for the probing. Use 5*w for stability
 
-    % Nonlinear Solver
-    for k = 1:1:5 % Newton-Raphson Iterations
-        [r, ~, ~] = fun_residual1(J0, J, H0, H1w1, nf, nz, w1, dt, t) ;
+    [~, R, freq] = fun_residual1(J0, J, 0, z1,  nf, nz, w1, dts, t) ; % Compute the residual for Point 1
+    [~, index] = min(abs(freq - (w1)/(2*pi) )) ; % identify the correct index for the optimization
+    delta_1 =  R(index);
 
-        if sum(abs(r))/numel(r) < tol
-	  break
-        end
 
-        [r_back, ~, ~] = fun_residual1(J0, J, H0, H1w1-dH1,  nf, nz, w1, dt, t) ;
-        [r_forw, ~, ~] = fun_residual1(J0, J, H0, H1w1+dH1, nf, nz, w1, dt, t) ;
+    [~, R, freq] = fun_residual1(J0, J, 0, z2,  nf, nz, w1, dts, t) ; % Compute the residual for Point 2
+    [~, index] = min(abs(freq - (w1)/(2*pi) )) ; % identify the correct index for the optimization
+    delta_0 =  R(index);
 
-        H1w1_new = H1w1 - r/((r_forw - r_back)/(2*dH1)) ;
-
-        H1w1 = H1w1_new;
-
-    end
-    
-    H1_sol(i) = H1w1;
+    H1_sol(i) =  delta_0/(delta_0 - delta_1); 
 end
- 
+
+
 end

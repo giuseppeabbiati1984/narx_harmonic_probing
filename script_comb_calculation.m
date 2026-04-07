@@ -1,7 +1,4 @@
-close all
-clear
-clc
-
+close all; clear; clc;
 % this script shows how to compute:
 % - the frequency combs of output and residual for an input frequency bin
 % - the checks on the identifiability of the GRF frequency bin
@@ -16,22 +13,24 @@ wu = sym('wu',[n,1]) ;
 wy = wu ;
 if n > 2
     for i = 1:1:n-2
-        wy = unique(kronsum(wy,wu),'rows') ;
+        wy = unique(kronsum(wy,wu), 'rows') ;
     end
 end
-wy = [wy;sum(wu)] ;
-wy = unique(wy,'rows') ;
+wy = [wy; sum(wu)] ;
+wy = unique(wy, 'rows') ;
 
 %% residual comb
 we = wy ;
 if n > 1
     for i = 1:1:n-1
-        we = unique(kronsum(we,wy),'rows') ;
+        we = unique(kronsum(we,wy), 'rows') ;
     end
 end
-we = unique(we,'rows') ;
+we = unique(we, 'rows') ;
 
 % max(abs(we))
+
+
 
 %% check
 
@@ -59,33 +58,9 @@ check = iq_vec*wu==sum(wu) ;
 
 vars = {wu} ;
 
-matlabFunction(wy,'file',['eval_wy_' num2str(n)],'vars',vars) ;
-matlabFunction(we,'file',['eval_we_' num2str(n)],'vars',vars) ;
-matlabFunction(check,'file',['eval_check_' num2str(n)],'vars',vars) ;
-
-return
-
-%%
-
-close all
-clear
-clc
-
-dw = 0.1 ;
-wb = 10 ;
-w = -wb:dw:(wb-dw) ;
-
-n = 4 ;
-
-% select a randon frequency bin
-wu = w(randi(numel(w),[n,1])).' ;
-
-% if bins are distringuishable
-if sum(eval_check(wu))==0
-    % evaluate combs
-    wy = eval(['eval_wy_' num2str(n) '(wu);']) ;
-    we = eval(['eval_we_' num2str(n) '(wu);']) ;
-end
+% matlabFunction(wy,'file',['eval_wy_' num2str(n)],'vars',vars) ;
+% matlabFunction(we,'file',['eval_we_' num2str(n)],'vars',vars) ;
+% matlabFunction(check,'file',['eval_check_' num2str(n)],'vars',vars) ;
 
 %%
 

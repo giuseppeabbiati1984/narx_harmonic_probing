@@ -6,6 +6,9 @@
 *.slx.r*
 *.mdl.r*
 
+# Data files
+*DuffTF_dw=1.mat
+
 # Derived content-obscured files
 *.p
 

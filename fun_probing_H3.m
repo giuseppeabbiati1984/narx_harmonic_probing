@@ -59,7 +59,7 @@ for k = 1 : numel(w1_ax)
         end
 
 
-	  [~, t] = fun_freq_finder_V2([abs(w1), abs(w2), abs(w3)], dw) ;						% find t that gives no leakage
+	  [~, t] = fun_freq_finder([abs(w1), abs(w2), abs(w3)], dw) ;						% find t that gives no leakage
 
 	  [~, R, freq] = fun_residual3(J0, J, JJ, JJJ, H0, H1w1, H1w2, H1w3,...
 	      H2w1w1, H2w2w2, H2w3w3, H2w1w2, H2w1w3, H2w2w3,...
@@ -78,7 +78,6 @@ for k = 1 : numel(w1_ax)
 
         end
     end
-
 
 
     if rem(k, 5) ==0

@@ -19,7 +19,7 @@ H3_eqn = @(w1, w2, w3) -1/6*H1_eqn(w1+w2+w3)*...
 
 % TF exact computation:
 
-w_dbl = [-fliplr(w), 0, w] ;													% Construct the negative part of the freq. axis
+w_dbl = [-fliplr(w(2:end)), w] ; % Construct the negative part of the freq. axis (avoid doubling of 0)
 
 % Declare arrays in memory
 H1_theor = zeros(size(w_dbl)); 

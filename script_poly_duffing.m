@@ -9,61 +9,59 @@ rng(10, 'twister') ;
 %% ######## GENERATE NUMERICAL DUFFING DATA  ########################
 
 %------------------------------------- Oscillator input: ----------------------------------------------------------------------------
-odePars.m = 1 ;														% mass [kg]
-odePars.k1 = 1e4 ;														% stiffness (linear) [N/m] 
-odePars.k2 = 1e7 ;														% stiffness (quadratic) [N/m2]
-odePars.k3 = 5e9 ;														% stiffness (cubic) [N/m3]
-odePars.w0 = sqrt(odePars.k1/odePars.m) ;										% modal frequency [rad/s]
-odePars.f0 = odePars.w0/(2*pi) ;												% modal frequency [Hz]
-odePars.xi = 0.10 ;														% damping ratio [  ]
-odePars.c = 2*odePars.xi*sqrt(odePars.k1*odePars.m) ;								% damping [Ns/m]
+odePars.m = 1 ; % mass [kg]
+odePars.k1 = 1e4 ; % stiffness (linear) [N/m] 
+odePars.k2 = 1e7 ; % stiffness (quadratic) [N/m2]
+odePars.k3 = 5e9 ; % stiffness (cubic) [N/m3]
+odePars.w0 = sqrt(odePars.k1/odePars.m) ; % modal frequency [rad/s]
+odePars.f0 = odePars.w0/(2*pi) ; % modal frequency [Hz]
+odePars.xi = 0.10 ; % damping ratio [  ]
+odePars.c = 2*odePars.xi*sqrt(odePars.k1*odePars.m) ; % damping [Ns/m]
 
 % Time Series Input:
-lagNumY = 3 ;														% lag samples on input
-lagNumF = 3 ;														% lag samples on output
-ord = "3" ;															% order of the poly-NARX
-numSeg = 3;															% number of segments ( >1 )
-lenSeg = 100 ;														% number of points in each segment
-fsr = 5000 ;															% sampling frequency 
-dtr = 1/fsr ;															% reference time step for ODE [s]
-dts = 0.005236 ;														% subsampling time step(s) for NARX [s]   opt = 5.236e-3
+lagNumY = 3 ; % lag samples on input
+lagNumF = 3 ; % lag samples on output
+ord = "3" ; % order of the poly-NARX
+numSeg = 3;	 % number of segments ( >1 )
+lenSeg = 100 ; % number of points in each segment
+fsr = 5000 ; % sampling frequency for ODE
+dtr = 1/fsr ; % reference time step for ODE [s]
+dts = 0.005236 ; % subsampling time step(s) for NARX [s]   opt = 5.236e-3
 tmax = lenSeg*numSeg*dts;
-tr = 0:dtr:tmax ;														% high frequency time axis [s]
-ts = 0:2*max(dts):tmax ;													% sampling time axis [s]
-fs = normrnd(0,5,[numel(ts), 1]) ;												% input signal [N]
-fr = interp1(ts, fs, tr) ;													% nyquist-proof input
+tr = 0:dtr:tmax ; % high frequency time axis [s]
+ts = 0:2*max(dts):tmax ; % sampling time axis [s]
+fs = normrnd(0,5,[numel(ts), 1]) ; % input signal [N]
+fr = interp1(ts, fs, tr) ; % nyquist-proof input
 clear ts fs
 
 
 %------------------------------------- Harmonic Probing Input: -----------------------------------------------------------------
-diag_offset = 1;														% diagonal offset 
-dw_res  = 5;															% freq-axis discretization
-w_min = 30;															% start frequency on the axis
-w_max = 100;														% end frequency on the axis
-w1 = w_min:dw_res:floor(w_max/dw_res)*dw_res ;									% axis of the LTF, QTF, CTF
-
-
+diag_offset = 1; % diagonal offset 
+dw_res  = 5; % freq-axis discretization
+w_min = 30; % start frequency on the axis
+w_max = 100; % end frequency on the axis
+w1 = w_min:dw_res:floor(w_max/dw_res)*dw_res ; % axis of the LTF, QTF, CTF
 
 % ODE response and force with added noise
-SNRf = 100 ;															% signal-to-noise ratio for input
-SNRy = 100 ;															% signal-to-noise ratio for output
-odeHandle = @(t, y) fun_ODEduffing(t, y, odePars, tr, fr) ;								% state-space definition of the duffing OED
+SNRf = 100 ; % signal-to-noise ratio for input
+SNRy = 100 ; % signal-to-noise ratio for output
+odeHandle = @(t, y) fun_ODEduffing(t, y, odePars, tr, fr) ; % state-space definition of the duffing OED
 														
-[yr, fr] = fun_ODEeval(odeHandle, tr ,fr, SNRf, SNRy) ;									% solving the OED
+[yr, fr] = fun_ODEeval(odeHandle, tr ,fr, SNRf, SNRy) ; % solving the OED
 
 %Compute scaling factors (input and output)
-stdF1 = std(fr) ;														% input std. dev. for scaling
-stdY1 = std(yr) ;														% output std. dev. for scaling
+stdF1 = std(fr) ; % input std. dev. for scaling
+stdY1 = std(yr) ; % output std. dev. for scaling
 
 %Compute transfer function scaling factors (nonlinear scaling)
 scale0 = stdY1/stdF1^0 ; 
-scale1 = stdY1/stdF1^1 ;													% LTF Scale
-scale2 = stdY1/stdF1^2 ;													% QTF Scale
-scale3 = stdY1/stdF1^3 ;													% CTF Scale
+scale1 = stdY1/stdF1^1 ; % LTF Scale
+scale2 = stdY1/stdF1^2 ; % QTF Scale
+scale3 = stdY1/stdF1^3 ; % CTF Scale
 
-%Scale the signals by the std. dev.
-fr_scl = fr/stdF1 ;														% Scaled input 
-yr_scl = yr/stdY1 ;														% Scaled output
+% Scale the signals by the std. dev.
+fr_scl = fr/stdF1 ; % Scaled input 
+yr_scl = yr/stdY1 ; % Scaled output
 
 
 % Segment the data into arrays sutiable for training the NARX model
@@ -71,60 +69,62 @@ yr_scl = yr/stdY1 ;														% Scaled output
 
 %% Training of Poly-NARX
 NARX = cell(size(Xy));
+
     for i = 1:numel(Xy)
-        NARX{i} = fun_poly_NARX(Xy{i}, Xf{i}, Y{i}, ord) ;								% Train a NARX model for each of the segments
+        NARX{i} = fun_poly_NARX(Xy{i}, Xf{i}, Y{i}, ord) ; %Train a NARX model for each of the segments. NARX one-step ahead is loaded based on the input data size
     end
-
 %% Compute/Load theoretical transfer functions
+freq_max = 200 ; %max limit of the frequency axis
 
-% %Uncomment to compute theoretical values at a set frequency discretization
-% w_theo = [1:4:w_bound] ;												% Discretization of the frequncy axis
-% [H1_exact, H2_exact, H3_exact, w_dbl_exact] = fun_analytical_duffing(odePars, w_theo) ;
+%Uncomment to compute theoretical values at a particular frequency discretization
+% freq_disc = 4; %discretization of the frequency axis [rad/s]
+% w_theo = [0:freq_disc:freq_max] ; % Discretization of the frequncy axis
+% [H1_course, H2_course, H3_course, w_dbl_course] = fun_analytical_duffing(odePars, w_theo) ;
+% save DuffTF_dw=4.mat H1_course H2_course H3_course w_dbl_course
 
-load DuffTF_dw=1.mat													% Loads the precomputed exact transfer functions at dw = 1 rad/s
-% load DuffTF_dw=4.mat	
+load DuffTF_dw=4.mat % Loads the precomputed exact transfer functions with resolution dw = 2 rad/s	
 
-% %Extract the diagonals of the QTF and CTF:
-% [W1, W2, W3] = meshgrid(w1, w1, w1) ;										% Define new frequency axis for the extraction
-% H2_mat_exact =  interp2(w_dbl_exact, w_dbl_exact, H2_exact, W1(:,:,1), W2(:,:,1), 'spline', 0) ;		% extract theoretical TF at a different frequency axis
-% H3_mat_exact =  interp3(w_dbl_exact, w_dbl_exact, w_dbl_exact, H3_exact, W1, W2, W3, 'spline', 0) ;
+% Interpolate to a finer grid for plotting:
+[X_int, Y_int, Z_int] = meshgrid(-freq_max:1:freq_max);
+H1_exact = interp1(w_dbl_course, H1_course, X_int(1,:,1), "spline");
+H2_exact = interp2(w_dbl_course, w_dbl_course, H2_course, X_int(:,:,1), Y_int(:,:,1), "spline");
+H3_exact = interp3(w_dbl_course, w_dbl_course, w_dbl_course,H3_course, X_int,  Y_int, Z_int, "spline");
+w_dbl_exact = -freq_max:1:freq_max; %frequency axis used for comparison in the plots
 
 %% ############### Probing #########################
 
 % Allocating memory for arrays:
-H1_scl = zeros(numSeg, numel(w1)) ;
-H1_sol = zeros(numSeg, numel(w1)) ;
+H1_scl = zeros(numSeg, numel(w1)) ; %vector for the SCALED output of the probing
+H1_sol = zeros(numSeg, numel(w1)) ;  %vector for the UNSCALED solution of the probing
 H2_mat_scl = zeros(numel(w1), numel(w1),numSeg) ;
 H2_mat_sol = zeros(numel(w1), numel(w1),numSeg) ;
 H3_mat_scl = zeros(numel(w1), numel(w1),numel(w1),numSeg) ;
 H3_mat_sol = zeros(numel(w1), numel(w1),numel(w1),numSeg) ;
 
-
-profile on
+% profile on
 for i = 1:1:size(Y, 2)
 disp(strcat('HP of segment : ', num2str(i), '/', num2str(size(Y, 2)))) ;
 
-    J0 = 0 ;															% Constant term
-    J1 = NARX{i}.J(:).' ;													% First order array of coefficients (Jacobian)
-    J2 = NARX{i}.H ;														% Second order array of coefficients (Hessian)	
+    J0 = 0 ; % Constant term
+    J1 = NARX{i}.J(:).' ; % First order array of coefficients (Jacobian)
+    J2 = NARX{i}.H ;	 % Second order array of coefficients (Hessian)	
 
     % Numerical Probing
-    % ####### H1 (LTF) ####################################
-    H1_scl(i, :) = fun_probing_H1(J0, J1, lagNumY, lagNumF, w1, dts) ;						% Scaled LTF output
-    H1_sol(i, :) = scale1 .* H1_scl(i, :) ;											% Unscale the LTF
+    % ####### H1 (LTF) ################################
+    H1_scl(i, :) = fun_probing_H1(J0, J1, lagNumY, lagNumF, w1, dts) ; % Scaled LTF output
+    H1_sol(i, :) = scale1 .* H1_scl(i, :) ; % Unscale the LTF
 
 
-    % ####### H2 (QTF) #################################
-    H2_mat_scl(:, :, i) = fun_probing_H2(J0, J1, J2, lagNumY, lagNumF , H1_scl(i, :), w1, dts) ;			% Scaled QTF output
-    H2_mat_sol(:, :, i) = scale2 .* H2_mat_scl(:, :, i);									% Unscale the QTF
+    % ####### H2 (QTF) ################################
+    H2_mat_scl(:, :, i) = fun_probing_H2(J0, J1, J2, lagNumY, lagNumF , H1_scl(i, :), w1, dts) ; % Scaled QTF output
+    H2_mat_sol(:, :, i) = scale2 .* H2_mat_scl(:, :, i); % Unscale the QTF
 
 
-
-    % ####### H3 (CTF) #################################
+    % ####### H3 (CTF) ################################
     if strcmp(ord, "3")
         T_prob = NARX{i}.T ;
         H3_mat_scl(:,:,:,i) = fun_probing_H3(J0, J1, J2, T_prob, lagNumY, lagNumF , H1_scl(i, :), H2_mat_scl(:, :, i), w1, dts) ; % Scaled CTF output
-        H3_mat_sol(:,:,:,i) = scale3 .* H3_mat_scl(:,:,:,i) ;								% Unscale the CTF
+        H3_mat_sol(:,:,:,i) = scale3 .* H3_mat_scl(:,:,:,i) ; % Unscale the CTF
     end
 
 end
@@ -133,8 +133,8 @@ end
 %% Plot LTF
 close all ;
 PlotFontSize = 27 ;
-NumStd = 3 ;															% How many std dev to plot
-Color1 = [.55 .55 .55]; Color2 = [.25 .95 .95]; Color3 = [.05 .05 .05]; color4 = [.25 .25 .25] ;			% Define colors
+NumStd = 3 ; % How many std dev to plot
+Color1 = [.55 .55 .55]; Color2 = [.25 .95 .95]; Color3 = [.05 .05 .05]; color4 = [.25 .25 .25] ; % Define colors
 
 
 %Obtain LTF mean and std  values
@@ -161,7 +161,7 @@ x_plot =[w1, fliplr(w1)];
          h1 = plot(w1, real(H1_sol(i, :)),  'kx',  'Color', color4, 'HandleVisibility','off');
      end
 
-     h2 = plot(w_dbl_exact, real(H1_exact),'r-','linewidth', 1.5) ; 							% first column is the diagonal
+     h2 = plot(w_dbl_exact, real(H1_exact),'r-','linewidth', 1.5) ;  % first column is the diagonal
      hm = plot(w1, real(H1_mean), 'bx','linewidth', 1.5) ;
      ylim(1.2*[y_min, y_max]); xlim([0, w_dbl_exact(end)]);
 
@@ -176,14 +176,14 @@ x_plot =[w1, fliplr(w1)];
      subplot(2,1,2); hold on; box on; set(gca,'FontSize',  PlotFontSize)
 
      f3 = fill(x_plot, imag(y_plot3), 1,'facecolor', Color3, 'edgecolor', 'none', 'facealpha', 0.2);
-     f2 = fill(x_plot, imag(y_plot2), 1,'facecolor', Color2, 'edgecolor', 'none', 'facealpha', 0.3) ;			% fill plot of the std. dev.
+     f2 = fill(x_plot, imag(y_plot2), 1,'facecolor', Color2, 'edgecolor', 'none', 'facealpha', 0.3) ; % fill plot of the std. dev.
 
      for i = 1:size(H1_sol,1)
           h1 = plot(w1, imag(H1_sol(i, :)),  'kx',  'Color', color4, 'HandleVisibility','off'); 
      end
 
-     h2 = plot(w_dbl_exact, imag(H1_exact), 'r-', 'linewidth', 1.5) ;							% exact solution 
-     hm = plot(w1, imag(H1_mean), 'bx','linewidth', 1.5) ;								% mean of all samples
+     h2 = plot(w_dbl_exact, imag(H1_exact), 'r-', 'linewidth', 1.5) ; % exact solution 
+     hm = plot(w1, imag(H1_mean), 'bx','linewidth', 1.5) ; % mean of all samples
      ylim(1.2*[y_min, y_max]); xlim([0, w_dbl_exact(end)]);
      xlabel('$\omega_1$ [rad/s]','Interpreter','latex')
      ylabel('$\Im(H^{(1)})$','Interpreter','latex')
@@ -228,8 +228,8 @@ y_plot3=[H2_3std(1, :), fliplr(H2_3std(2, :))] ;
          h1 = plot(w1(1:end-diag_offset), real(H2_sol(j, :)),  'kx', 'Color', color4, 'HandleVisibility','off'); 
      end
 
-     h2 = plot(w_dbl_exact, real(H2_exact_diag), 'r-', 'linewidth', 1.5) ;							% exact solution
-     hm = plot(w1(1:end-diag_offset), real(H2_mean), 'bx','linewidth', 1.5) ;						% mean of all samples
+     h2 = plot(w_dbl_exact, real(H2_exact_diag), 'r-', 'linewidth', 1.5) ; % exact solution
+     hm = plot(w1(1:end-diag_offset), real(H2_mean), 'bx','linewidth', 1.5) ; % mean of all samples
 
      ylim(1.2*[y_min, y_max]); xlim([0, w_dbl_exact(end)]);
      % title({[strcat(' Freq. $\Delta \omega =$', num2str(dw), ' rad/s, ')]; ...
@@ -251,8 +251,8 @@ y_plot3=[H2_3std(1, :), fliplr(H2_3std(2, :))] ;
         h1 =  plot(w1(1:end-diag_offset), imag(H2_sol(j, :)), 'kx', 'Color', color4, 'HandleVisibility','off'); 
      end
 
-     h2 = plot(w_dbl_exact, imag(H2_exact_diag), 'r-', 'linewidth', 1.5) ;						% exact solution 
-     hm = plot(w1(1:end-diag_offset), imag(H2_mean), 'bx','linewidth', 1.5) ;						% mean of all samples
+     h2 = plot(w_dbl_exact, imag(H2_exact_diag), 'r-', 'linewidth', 1.5) ; % exact solution 
+     hm = plot(w1(1:end-diag_offset), imag(H2_mean), 'bx','linewidth', 1.5) ; % mean of all samples
 
      ylim(1.2*[y_min, y_max]); xlim([0, w_dbl_exact(end)]);
      xlabel('$\omega_1$ [rad/s]','Interpreter','latex')
@@ -261,9 +261,9 @@ y_plot3=[H2_3std(1, :), fliplr(H2_3std(2, :))] ;
      % legend([h1, h1_qtf, f_qtf], {'Harmonic Probing', "Theoretical", strcat(num2str(NumStd), ' std. dev') }, 'location', 'northeast',"FontSize",PlotFontSize-7) ;
      
 %% Plot CTF
-ax1 = w1(2):dw_res:w1(end)-3*dw_res*diag_offset ;									% comparison axis 1
-ax2 = ax1+diag_offset*dw_res ;												% comparison axis 2
-ax3 = ax2+diag_offset*dw_res  ;												% comparison axis 3
+ax1 = w1(2):dw_res:w1(end)-3*dw_res*diag_offset ; % comparison axis 1
+ax2 = ax1+diag_offset*dw_res ; % comparison axis 2
+ax3 = ax2+diag_offset*dw_res  ; % comparison axis 3
 
 
 H3_sol = zeros(1,numel(ax1)) ;
@@ -292,7 +292,6 @@ for j = 1:numel(ax1_exact)
 end
 
 
-
 y_max = max([imag(H3_exact_diag), real(H3_exact_diag)], [], 'all');
 y_min =  min([imag(H3_exact_diag), real(H3_exact_diag)], [], 'all');   
 x_plot =[ax1, fliplr(ax1)];
@@ -317,8 +316,8 @@ y_plot3=[H3_3std(1, :), fliplr(H3_3std(2, :))] ;
         h1 = plot(ax1, real(H3_sol(j, :)),  'kx', 'Color', color4, 'HandleVisibility','off'); 
      end
 
-     h2 = plot(w_dbl_exact, real(H3_exact_diag) , 'r-', 'linewidth', 1.5) ;						% exact solution 
-     hm = plot(ax1, real(H3_mean), 'bx', 'linewidth', 1.5) ;								% mean of all samples
+     h2 = plot(w_dbl_exact, real(H3_exact_diag) , 'r-', 'linewidth', 1.5) ; % exact solution 
+     hm = plot(ax1, real(H3_mean), 'bx', 'linewidth', 1.5) ; % mean of all samples
 
      ylim(1.2*[y_min, y_max]); xlim([0, w_dbl_exact(end)]);
 
@@ -340,8 +339,8 @@ y_plot3=[H3_3std(1, :), fliplr(H3_3std(2, :))] ;
          h1 = plot(ax1, imag(H3_sol(j, :)),  'kx', 'Color', color4, 'HandleVisibility','off');
      end
 
-     h2 = plot(w_dbl_exact, imag(H3_exact_diag), 'r-', 'linewidth', 1.5) ;						% exact solution 
-     hm = plot(ax1, imag(H3_mean), 'bx','linewidth', 1.5) ;								% mean of all samples
+     h2 = plot(w_dbl_exact, imag(H3_exact_diag), 'r-', 'linewidth', 1.5) ; % exact solution 
+     hm = plot(ax1, imag(H3_mean), 'bx','linewidth', 1.5) ; % mean of all samples
 
      ylim(1.2*[y_min, y_max]); xlim([0, w_dbl_exact(end)]);
      xlabel('$\omega_1$ [rad/s]','Interpreter','latex')

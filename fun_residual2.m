@@ -29,30 +29,8 @@ L = numel(t) ;
 
 P2 = (Y/L) ;															% distribute the amplitude over all the time-steps
 
-freq =  fs/L*(-(L)/2 : (L-1)/2) ;												% in hertz = 1/s 
+freq =  fs/L*(-(L)/2 : (L-1)/2) ;												% in hz = 1/s 
 % freq_w = freq*2*pi ;
 R = transpose(P2) ;
 
 end
-
-% slow implementation (looping)
-% for i=1:numel(t)
-%     % bi-chromatic excitation
-%     z = exp(1i*w1*(t(i) - dts*(0:1:(nz) ))) + ...
-%           exp(1i*w2*(t(i) - dts*(0:1:(nz) ))) ;
-%
-%     % response up to QTF
-%     f = H0  + ...														% bias term
-%         H1w1 * exp(1i*w1*(t(i) - dts*(0:1:(nf) ))) + ...									% linear w1
-%         H1w2 * exp(1i*w2*(t(i) - dts*(0:1:(nf) ))) + ...									% linear w2
-%  H2w1w1 * exp(1i*2*w1*(t(i) - dts*(0:1:(nf) )))  + ...								% quad 2w1
-%          H2w2w2 * exp(1i*2*w2*(t(i) - dts*(0:1:(nf) )))  + ...								% quad 2w2
-% (H2w1w2 + conj(H2w1w2))  * exp(1i*w12*(t(i) - dts*(0:1:(nf) )))  ;						% quad w1+w2
-%
-%
-%     X = [f(2:end), z] ;
-%     f  = f(1) ;
-%
-%     %Residual in time domain
-%     r(i) = f - (J0 + J * X.' +  1/2 * X * JJ * X.') ;
-% end

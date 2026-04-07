@@ -5,8 +5,8 @@ function H2_sol = fun_probing_H2(J0, J, JJ, nf, nz, H1, w1_ax, dts)
 % H1= H1./ (a/b); %scale to correspond to normalized data
 
 %Point at which to evaluate the residual z = H2
-z1 = 1;															% Point 1 for eval of residual
-z2 = 0; 															% Point 2 for eval of residual
+z1 = 1; % Point 1 for eval of residual
+z2 = 0; % Point 2 for eval of residual
 
 %% QTF 
 H2_sol = ones( [numel(w1_ax), numel(w1_ax)] )./1e5 +  1i*ones( [numel(w1_ax), numel(w1_ax)] )./1e5 ;	% Array for initial guesses
@@ -18,8 +18,8 @@ dw = abs(w1_ax(2) - w1_ax(1)) ;
 % parfor i = 1 : numel(w1_ax)
 for j = 1: numel(w1_ax)
     for i = 1: numel(w1_ax)
-        w1 = w1_ax(i) ;													% in rad/s 1st harmonic
-        w2 = w1_ax(j) ;													% in rad/s 2nd harmonic
+        w1 = w1_ax(i) ; % in rad/s 1st harmonic
+        w2 = w1_ax(j) ; % in rad/s 2nd harmonic
 
 
          % Check for frequency mixing:
@@ -28,7 +28,7 @@ for j = 1: numel(w1_ax)
 	      || w1+w2 == 2*w2 ...
 	      || w1 == w2 
 
-	  H2_sol(i, j) = NaN ;												% If freq cannot be obtained set NaN for later interp
+	  H2_sol(i, j) = NaN ; % If freq cannot be obtained set NaN for later interp
 	  continue
         end
 
@@ -36,15 +36,15 @@ for j = 1: numel(w1_ax)
         H1w1 = interp1(w1_ax, H1, w1, "spline", "extrap")  ;
         H1w2 = interp1(w1_ax, H1, w2, "spline", "extrap")  ;
 
-        [~, t] = fun_freq_finder_V2([abs(w1), abs(w2)], dw) ; % find t that gives no leakage
+        [~, t] = fun_freq_finder([abs(w1), abs(w2)], dw) ; % find t that gives no leakagein the FFT
 
 
-        [~, R, freq] = fun_residual2(J0, J, JJ, 0, H1w1, H1w2, z1, nf, nz, w1, w2, dts, t) ;				% Compute the residual for Point 1
+        [~, R, freq] = fun_residual2(J0, J, JJ, 0, H1w1, H1w2, z1, nf, nz, w1, w2, dts, t) ; % Compute the residual for Point 1
         [~, index] = min(abs(freq - (w1+w2)/(2*pi) )) ; % identify the correct index for the optimization
         delta_1 =  R(index);
 
 
-        [~, R, freq] = fun_residual2(J0, J, JJ, 0, H1w1, H1w2, z2, nf, nz, w1, w2, dts, t) ;				% Compute the residual for Point 2
+        [~, R, freq] = fun_residual2(J0, J, JJ, 0, H1w1, H1w2, z2, nf, nz, w1, w2, dts, t) ; % Compute the residual for Point 2
         [~, index] = min(abs(freq - (w1+w2)/(2*pi) )) ; % identify the correct index for the optimization
         delta_0 =  R(index);
 
