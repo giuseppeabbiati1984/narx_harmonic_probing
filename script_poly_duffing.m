@@ -82,7 +82,7 @@ freq_max = 200 ; %max limit of the frequency axis
 % [H1_course, H2_course, H3_course, w_dbl_course] = fun_analytical_duffing(odePars, w_theo) ;
 % save DuffTF_dw=4.mat H1_course H2_course H3_course w_dbl_course
 
-load DuffTF_dw=4.mat % Loads the precomputed exact transfer functions with resolution dw = 2 rad/s	
+load DuffTF_dw=4.mat % Loads the precomputed exact transfer functions with resolution dw = 2 rad/s
 
 % Interpolate to a finer grid for plotting:
 [X_int, Y_int, Z_int] = meshgrid(-freq_max:1:freq_max);
