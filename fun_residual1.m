@@ -1,29 +1,27 @@
 function [r, R, freq] = fun_residual1(J0, J, H0, H1w1, nf, nz, w1, dts, t)
-%this function calcualtes the residual due to a second order linearization
-%and Volterra probing
+%This function calcualtes the residual between a linear NARX model and 1st order Volterra expansion
      
-             % fs = 1/(t(2) - t(1));
-	   dt = (t(end) - t(1))/(length(t) - 1);										% Updated after talking with Øyvind, Feb 27, 2024
-	   fs = 1/dt;														% Updated after talking with Øyvind, Feb 27, 2024
+	   dt = (t(end) - t(1))/(length(t) - 1); % Obtain the time-step for computing the frequency axis of the DFT
+	   fs = 1/dt;	% Obtain frequency discretization of the axis of the DFT
 
 
 	   % vectorized implementation
-	   z = exp(1i*w1*(t.' - dts*(0:1:(nz) )))  ;
+	   z = exp(1i*w1*(t.' - dts*(0:1:(nz) )))  ; % Monochromatic input at frequency w1
 
-	   f = H0  + H1w1 * exp(1i*w1*(t.' - dts*(0:1:(nf) )))  ;								% Constant + Linear term
+	   f = H0  + H1w1 * exp(1i*w1*(t.' - dts*(0:1:(nf) )))  ;	% Volterra series expansion of order 1
 
 
 	   X_vec = [f(:, 2:end), z] ;
 
-	   r = f(:, 1).' - J0 - (J * X_vec.')  ;											% time-domain residual
+	   r = f(:, 1).' - J0 - (J * X_vec.')  ;	% Time-domain residual. r = NARX - Volterra
 
 
-%  Double-sided spectrum
+%  Double-sided spectrum:
 Y = fftshift( fft(r) ) ;
 L = numel(t) ;
 
-P2 = (Y/L) ;															% distribute the amplitude over all the time-steps
+P2 = (Y/L) ; % Scale the amplitude
 
-freq =  fs/L*(-(L)/2 : (L-1)/2) ;												% in hertz = 1/s 
+freq =  fs/L*(-(L)/2 : (L-1)/2) ; % Frequncy axis of the DFT in hertz = 1/s 
 R = transpose(P2) ;
 end

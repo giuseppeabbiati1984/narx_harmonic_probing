@@ -22,7 +22,7 @@ odePars.c = 2*odePars.xi*sqrt(odePars.k1*odePars.m) ; % damping [Ns/m]
 lagNumY = 3 ; % lag samples on input
 lagNumF = 3 ; % lag samples on output
 ord = "3" ; % order of the poly-NARX
-numSeg = 3;	 % number of segments ( >1 )
+numSeg = 10; % number of segments ( >1 )
 lenSeg = 100 ; % number of points in each segment
 fsr = 5000 ; % sampling frequency for ODE
 dtr = 1/fsr ; % reference time step for ODE [s]
@@ -37,9 +37,9 @@ clear ts fs
 
 %------------------------------------- Harmonic Probing Input: -----------------------------------------------------------------
 diag_offset = 1; % diagonal offset 
-dw_res  = 5; % freq-axis discretization
-w_min = 30; % start frequency on the axis
-w_max = 100; % end frequency on the axis
+dw_res  = 1; % freq-axis discretization
+w_min = 45; % start frequency on the axis
+w_max = 60; % end frequency on the axis
 w1 = w_min:dw_res:floor(w_max/dw_res)*dw_res ; % axis of the LTF, QTF, CTF
 
 % ODE response and force with added noise
@@ -84,7 +84,7 @@ freq_max = 200 ; %max limit of the frequency axis
 
 load DuffTF_dw=4.mat % Loads the precomputed exact transfer functions with resolution dw = 2 rad/s
 
-% Interpolate to a finer grid for plotting:
+% Interpolate to a finer grid (dw=1 rad/s) for plotting:
 [X_int, Y_int, Z_int] = meshgrid(-freq_max:1:freq_max);
 H1_exact = interp1(w_dbl_course, H1_course, X_int(1,:,1), "spline");
 H2_exact = interp2(w_dbl_course, w_dbl_course, H2_course, X_int(:,:,1), Y_int(:,:,1), "spline");
@@ -101,7 +101,6 @@ H2_mat_sol = zeros(numel(w1), numel(w1),numSeg) ;
 H3_mat_scl = zeros(numel(w1), numel(w1),numel(w1),numSeg) ;
 H3_mat_sol = zeros(numel(w1), numel(w1),numel(w1),numSeg) ;
 
-% profile on
 for i = 1:1:size(Y, 2)
 disp(strcat('HP of segment : ', num2str(i), '/', num2str(size(Y, 2)))) ;
 
@@ -111,25 +110,24 @@ disp(strcat('HP of segment : ', num2str(i), '/', num2str(size(Y, 2)))) ;
 
     % Numerical Probing
     % ####### H1 (LTF) ################################
-    H1_scl(i, :) = fun_probing_H1(J0, J1, lagNumY, lagNumF, w1, dts) ; % Scaled LTF output
+    H1_scl(i, :) = fun_probing_H1(J0, J1, lagNumY, lagNumF, w1, dts) ; % Numerical probing of LTF
     H1_sol(i, :) = scale1 .* H1_scl(i, :) ; % Unscale the LTF
 
 
     % ####### H2 (QTF) ################################
-    H2_mat_scl(:, :, i) = fun_probing_H2(J0, J1, J2, lagNumY, lagNumF , H1_scl(i, :), w1, dts) ; % Scaled QTF output
+    H2_mat_scl(:, :, i) = fun_probing_H2(J0, J1, J2, lagNumY, lagNumF , H1_scl(i, :), w1, dts) ; % Numerical probing of QTF
     H2_mat_sol(:, :, i) = scale2 .* H2_mat_scl(:, :, i); % Unscale the QTF
 
 
     % ####### H3 (CTF) ################################
     if strcmp(ord, "3")
         T_prob = NARX{i}.T ;
-        H3_mat_scl(:,:,:,i) = fun_probing_H3(J0, J1, J2, T_prob, lagNumY, lagNumF , H1_scl(i, :), H2_mat_scl(:, :, i), w1, dts) ; % Scaled CTF output
+        H3_mat_scl(:,:,:,i) = fun_probing_H3(J0, J1, J2, T_prob, lagNumY, lagNumF , H1_scl(i, :), H2_mat_scl(:, :, i), w1, dts) ; % % Numerical probing of CTF
         H3_mat_sol(:,:,:,i) = scale3 .* H3_mat_scl(:,:,:,i) ; % Unscale the CTF
     end
 
 end
 
-% profile viewer
 %% Plot LTF
 close all ;
 PlotFontSize = 27 ;
@@ -189,7 +187,7 @@ x_plot =[w1, fliplr(w1)];
      ylabel('$\Im(H^{(1)})$','Interpreter','latex')
      set(gca, 'FontSize',  PlotFontSize) ;
 
-%% Plot Diagonal of the QTF
+%% Plot Diagonal of QTF
 
 H2_sol = zeros(size(Y, 2),numel(w1)-diag_offset) ;
 H2_exact_diag = zeros(1,numel(w_dbl_exact)) ;
@@ -260,7 +258,7 @@ y_plot3=[H2_3std(1, :), fliplr(H2_3std(2, :))] ;
      set(gca, 'FontSize',  PlotFontSize) ;
      % legend([h1, h1_qtf, f_qtf], {'Harmonic Probing', "Theoretical", strcat(num2str(NumStd), ' std. dev') }, 'location', 'northeast',"FontSize",PlotFontSize-7) ;
      
-%% Plot CTF
+%% Plot Diagonal of CTF
 ax1 = w1(2):dw_res:w1(end)-3*dw_res*diag_offset ; % comparison axis 1
 ax2 = ax1+diag_offset*dw_res ; % comparison axis 2
 ax3 = ax2+diag_offset*dw_res  ; % comparison axis 3
