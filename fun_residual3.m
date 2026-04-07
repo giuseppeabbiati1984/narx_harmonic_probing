@@ -24,8 +24,8 @@ function [eps, R, freq] = fun_residual3(C1, C2, C3, H1w1, H1w2, H1w3,...
 % t: time-vector [s]
 
 
-dt = (t(end) - t(1))/(length(t) - 1);
-fs = 1/dt;
+dt = (t(end) - t(1))/(length(t) - 1); % Obtain the time-step for computing the frequency axis of the DFT
+fs = 1/dt;  % Obtain frequency discretization of the axis of the DFT
 
 w12 = w1 + w2 ;
 w13 = w1 + w3 ;
@@ -78,11 +78,12 @@ Xc = permute(X_vec.', [1 3 2]); % [r x 1 x numel(t)]  (rearanges the dimensions 
 
 % cube(i) = (1/6) * X(i,:) * S(:,:,i) * X(i,:).'
 cube = (1/6) * squeeze( pagemtimes( pagemtimes(Xp, S), Xc ) ); % [numel(t) x 1]
+% pagemtimes: multiplies two 2D arrays over the 3rd dimension
 
 %========================
 % Residual vector [numel(t) x 1]
 %========================
-eps = y(:, 1) - (lin + quad + cube);
+eps = y(:, 1) - (lin + quad + cube); % Time-domain residual. r = Volterra - NARX. [numel(t) x 1]. Eq. 24. (pg. 5)
 
 
 %  Double-sided spectrum
