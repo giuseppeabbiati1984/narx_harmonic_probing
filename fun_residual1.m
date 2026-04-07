@@ -1,27 +1,36 @@
-function [r, R, freq] = fun_residual1(J0, J, H0, H1w1, nf, nz, w1, dts, t)
-%This function calcualtes the residual between a linear NARX model and 1st order Volterra expansion
-     
-	   dt = (t(end) - t(1))/(length(t) - 1); % Obtain the time-step for computing the frequency axis of the DFT
-	   fs = 1/dt;	% Obtain frequency discretization of the axis of the DFT
+function [eps, R, freq] = fun_residual1(C1, H1w1, ry, ru, w1, dts, t)
+%This function calcualtes the residual between a 1st-order NARX model and 1st-order Volterra expansion
+% The computation is vectorized for efficiency
+
+% INPUT description:
+% ry: Lags on output signal
+% ru: Lags on input signal
+% r = ry + ru + 1: Total length of the input vector
+% C1: Vector of coefficients contributing to the linear NARX term. [1 x r]
+% H1w1: value of the linear GFRF at w1.
+% w1: frequency value for probing [rad/s]
+% dts: time-step [s]
+% t: time-vector [s]
 
 
-	   % vectorized implementation
-	   z = exp(1i*w1*(t.' - dts*(0:1:(nz) )))  ; % Monochromatic input at frequency w1
-
-	   f = H0  + H1w1 * exp(1i*w1*(t.' - dts*(0:1:(nf) )))  ;	% Volterra series expansion of order 1
+dt = (t(end) - t(1))/(length(t) - 1); % Obtain the time-step for computing the frequency axis of the DFT
+fs = 1/dt;	% Obtain frequency discretization of the axis of the DFT
 
 
-	   X_vec = [f(:, 2:end), z] ;
+u = exp(1i*w1*(t.' - dts*(0:1:(ru) )))  ; % Monochromatic input at frequency w1. [numel(t) x (ru + 1)]
+y = H1w1 * exp(1i*w1*(t.' - dts*(0:1:(ry) )))  ; % Volterra series expansion of order 1. [numel(t) x (ru + 1)]
 
-	   r = f(:, 1).' - J0 - (J * X_vec.')  ;	% Time-domain residual. r = NARX - Volterra
+X_vec = [y(:, 2:end), u]; % input vector. [numel(t) x r]
+
+eps = y(:, 1).' - (C1 * X_vec.')  ; % Time-domain residual. r = Volterra - NARX. [1 x numel(t)]. Eq. 24. (pg. 5)
 
 
 %  Double-sided spectrum:
-Y = fftshift( fft(r) ) ;
+Y = fftshift( fft(eps) ) ;
 L = numel(t) ;
 
 P2 = (Y/L) ; % Scale the amplitude
 
-freq =  fs/L*(-(L)/2 : (L-1)/2) ; % Frequncy axis of the DFT in hertz = 1/s 
-R = transpose(P2) ;
+freq =  fs/L*(-(L)/2 : (L-1)/2) ; % Frequncy axis of the DFT in hertz = 1/s. [1 x numel(t)]
+R = transpose(P2) ; % [numel(t) x 1]
 end

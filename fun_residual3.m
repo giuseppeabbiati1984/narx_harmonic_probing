@@ -1,82 +1,97 @@
-function [r, R, freq] = fun_residual3(J0, J, JJ, JJJ, H0, H1w1, H1w2, H1w3,...
-	      H2w1w1, H2w2w2, H2w3w3, H2w1w2, H2w1w3, H2w2w3, H3, nf, nz, w1, w2, w3, dts, t) 
+function [eps, R, freq] = fun_residual3(C1, C2, C3, H1w1, H1w2, H1w3,...
+    H2w1w1, H2w2w2, H2w3w3, H2w1w2, H2w1w3, H2w2w3, H3w1w2w3, ry, ru, w1, w2, w3, dts, t)
+%This function calcualtes the residual between a 3rd-order NARX model and 3rd-order Volterra expansion
+% The computation is vectorized for efficiency
 
-% This function calcualtes the residual of a third order system and a Volterra expansion
-
-	   dt = (t(end) - t(1))/(length(t) - 1); 
-	   fs = 1/dt; 
-
-             w12 = w1 + w2 ;
-             w13 = w1 + w3 ;
-             w23 = w2 + w3 ;
-             w123 = w1 + w2 + w3 ;
-
-	 
-	   z = exp(1i*w1*(t.' - dts*(0:1:(nz) ))) + ...
-		exp(1i*w2*(t.' - dts*(0:1:(nz) ))) + ...
-		exp(1i*w3*(t.' - dts*(0:1:(nz) ))) ;
-
-	   %
-	   f = H0  + ...   % bias term
-	       H1w1 * exp(1i*w1*(t.' - dts*(0:1:(nf) ))) + ...								% linear w1
-	       H1w2 * exp(1i*w2*(t.' - dts*(0:1:(nf) ))) + ...								% linear w2
-	       H1w3 * exp(1i*w3*(t.' - dts*(0:1:(nf) ))) + ...								% linear w3
-	       H2w1w1 * exp(1i*2*w1*(t.' - dts*(0:1:(nf) )))  + ...							% quad w12
-	       H2w2w2 * exp(1i*2*w2*(t.' - dts*(0:1:(nf) )))  + ...							% quad w13
-	       H2w3w3 * exp(1i*2*w3*(t.' - dts*(0:1:(nf) )))  + ...							% quad w12
-	       (H2w1w2+H2w1w2) * exp(1i*w12*(t.' - dts*(0:1:(nf) )))  + ...						% quad w12
-	       (H2w1w3+H2w1w3) * exp(1i*w13*(t.' - dts*(0:1:(nf) )))  + ...						% quad w13
-	       (H2w2w3+H2w2w3) * exp(1i*w23*(t.' - dts*(0:1:(nf) )))  + ...						% quad w12
-	       6*H3 * exp(1i*w123*(t.' - dts*(0:1:(nf) )))  ;								% cubic w123
+% INPUT description:
+% ry: Lags on output signal
+% ru: Lags on input signal
+% r = ry + ru + 1: Total length of the input vector
+% C1: Vector of coefficients contributing to the linear NARX term. [1 x r]
+% C2: Array of coefficients contributing to the quadratic NARX term. [r x r]
+% C3: Tensor of coefficients contributing to the cubic NARX term. [r x r x r]
+% H1w1: value of the linear GFRF at w1
+% H1w2: value of the linear GFRF at w2
+% H1w3: value of the linear GFRF at w3
+% H2w1w2: value of the quadratic GFRF at (w1,w2)
+% .
+% .
+% H3w1w2w3: value of the cubic GFRF at (w1,w2, w3) 
+% w1: frequency value for probing [rad/s]
+% w2: frequency value for probing [rad/s]
+% w3: frequency value for probing [rad/s]
+% dts: time-step [s]
+% t: time-vector [s]
 
 
-n  = numel(J);														% system size
-Nt = numel(t);														% time series length 
+dt = (t(end) - t(1))/(length(t) - 1);
+fs = 1/dt;
+
+w12 = w1 + w2 ;
+w13 = w1 + w3 ;
+w23 = w2 + w3 ;
+w123 = w1 + w2 + w3 ;
+
+% Tri-chromatic input at w1, w2, w3 [numel(t) x (ru + 1)]:
+u = exp(1i*w1*(t.' - dts*(0:1:(ru) ))) + ...
+    exp(1i*w2*(t.' - dts*(0:1:(ru) ))) + ...
+    exp(1i*w3*(t.' - dts*(0:1:(ru) ))) ; 
+
+% Volterra output [numel(t) x (ru + 1)] :
+y = ...
+    H1w1 * exp(1i*w1*(t.' - dts*(0:1:(ry) ))) + ...	% linear w1
+    H1w2 * exp(1i*w2*(t.' - dts*(0:1:(ry) ))) + ...	 % linear w2
+    H1w3 * exp(1i*w3*(t.' - dts*(0:1:(ry) ))) + ...	 % linear w3
+    H2w1w1 * exp(1i*2*w1*(t.' - dts*(0:1:(ry) )))  + ...	 % quad w12
+    H2w2w2 * exp(1i*2*w2*(t.' - dts*(0:1:(ry) )))  + ... % quad w13
+    H2w3w3 * exp(1i*2*w3*(t.' - dts*(0:1:(ry) )))  + ... % quad w12
+    (H2w1w2+H2w1w2) * exp(1i*w12*(t.' - dts*(0:1:(ry) )))  + ... % quad w12
+    (H2w1w3+H2w1w3) * exp(1i*w13*(t.' - dts*(0:1:(ry) )))  + ... % quad w13
+    (H2w2w3+H2w2w3) * exp(1i*w23*(t.' - dts*(0:1:(ry) )))  + ... % quad w12
+    6*H3w1w2w3 * exp(1i*w123*(t.' - dts*(0:1:(ry) )))  ; % cubic w123. 
 
 
-X  = [f(:, 2:end), z];														% Nt x n
-f0 =  f(:, 1) ;															% Nt x 1
+r  = ry + ru + 1; % system size
 
+X_vec  = [y(:, 2:end), u];	% Input vector. [numel(t) x r]
 
 %========================
-% Linear term: J*X'
+% Linear NARX term: C1*X'
 %========================
-lin = X*J.';															% Nt x 1
+lin = X_vec*C1.'; % [numel(t) x 1]
 
 %========================
-% Quadratic term: 1/2 * X*JJ*X'
+% Quadratic NARX term: 1/2 * X*C2*X'
 %========================
-quad = 0.5 * sum( (X*JJ) .* X , 2 ); 											 % Nt x 1
+quad = 0.5 * sum( (X_vec*C2) .* X_vec , 2 ); % [numel(t) x 1]
 
 %========================
-% Cubic term: 1/6 * sum_{a,b,c} JJJ(a,b,c) x_a x_b x_c
+% Cubic NARX term: 1/6 * 1/2 * X*C3*X'*X'
 %========================
+C3_stack = reshape(C3, r*r, r); % stack the 3D tensor into a 2D array % [(r^2) x r]
+vecS = C3_stack * X_vec.'; % compute 1 page for each time-step [(r^2) x numel(t)]
+S  = reshape(vecS, r, r, numel(t)); % [r x r x numel(t)]  (pages are 3rd dim)
 
-JJJ2 = reshape(JJJ, n*n, n); 												% (n^2) x n
-vecS = JJJ2 * X.';														% (n^2) x Nt
-S    = reshape(vecS, n, n, Nt);												% n x n x Nt  (pages are 3rd dim)
-
-% Make X a row/col per page 
-Xp = permute(X, [3 2 1]); 													% 1 x n x Nt  (rearanges the dimensions of the X matrix)
-Xc = permute(X.', [1 3 2]);													% n x 1 x Nt  (rearanges the dimensions of the X matrix)
+% Make X a row/col per page
+Xp = permute(X_vec, [3 2 1]); % [1 x r x numel(t)  (rearanges the dimensions of the X matrix)
+Xc = permute(X_vec.', [1 3 2]); % [r x 1 x numel(t)]  (rearanges the dimensions of the X matrix)
 
 % cube(i) = (1/6) * X(i,:) * S(:,:,i) * X(i,:).'
-cube = (1/6) * squeeze( pagemtimes( pagemtimes(Xp, S), Xc ) );							% Nt x 1
-
+cube = (1/6) * squeeze( pagemtimes( pagemtimes(Xp, S), Xc ) ); % [numel(t) x 1]
 
 %========================
-% Residual vector r (Nt x 1)
+% Residual vector [numel(t) x 1]
 %========================
-r = f0 - (J0 + lin + quad + cube);
+eps = y(:, 1) - (lin + quad + cube);
 
 
-% %DOUBLE SIDED SPECTRUM
-Y = fftshift( fft(r) ) ;
+%  Double-sided spectrum
+Y = fftshift( fft(eps) ) ;
 L = numel(t) ;
 
-P2 = Y/(L) ; % distribute the amplitude over all the time-steps
+P2 = Y/(L) ; % Scale the amplitude
 
-freq =  fs*(-L/2 : L/2-1)/L ; % in hertz = 1/s 
+freq =  fs*(-L/2 : L/2-1)/L ; % Frequncy axis of the DFT in hertz = 1/s
 R = transpose(P2) ;
 
 end

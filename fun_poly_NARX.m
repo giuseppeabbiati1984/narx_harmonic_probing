@@ -83,16 +83,16 @@ NARX.FitInfo = FitInfo;
 
 %Create a function name strings for calling for J and H based on nf and nz
 string_fun_J = strcat('fun_J_nf', num2str(NARX.lagNumY), 'nz' , num2str(NARX.lagNumU), '_ord', num2str(ord), "(a_ls1_ext.')") ;
-NARX.J(:) =  eval(string_fun_J)  ; % reconstruction of sparse Jacobian
+NARX.C1(:) =  eval(string_fun_J)  ; % reconstruction of sparse Jacobian
 
 if ord == "2" || ord == "3" || ord =="2O" || ord =="23O"
 string_fun_H = strcat('fun_H_nf', num2str(NARX.lagNumY), 'nz' , num2str(NARX.lagNumU), '_ord', num2str(ord), "(a_ls1_ext.')") ;
-NARX.H(:, :) = eval(string_fun_H) ; % reconstruction of sparse Hessian
+NARX.C2(:, :) = eval(string_fun_H) ; % reconstruction of sparse Hessian
 end
 
 if ord == "3" || ord =="23O"
 string_fun_T = strcat('fun_T_nf', num2str(NARX.lagNumY), 'nz' , num2str(NARX.lagNumU), '_ord', num2str(ord), "(a_ls1_ext.')") ;
-NARX.T(:, :, :) = eval(string_fun_T) ; % reconstruction of sparse Tensor
+NARX.C3(:, :, :) = eval(string_fun_T) ; % reconstruction of sparse Tensor
 end
 
 

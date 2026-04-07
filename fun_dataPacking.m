@@ -1,5 +1,5 @@
-function [Xf, Xz, F, tr_ss, zf_ss, ff_ss] = fun_dataPacking(tr, zr, fr, dts, numSegments, lenSegment, lagNumZ, lagNumF)
-
+function [Xf, Xz, F, tr_ss, zf_ss, ff_ss] = fun_dataPacking(tr, zr, fr, dts, numSegments, lenSegment, ru, ry)
+% This function packages the data into arrays sutable for LASSO regression. 
 
         %ensure column vectors
         tr = reshape(tr,[length(tr), 1]);
@@ -43,16 +43,16 @@ for ii = 1:numel(SS)
         Xf{ii,jj} = [] ;
         Xz{ii,jj} = [] ;
         
-        for kk = 1:1:lagNumF
+        for kk = 1:1:ry
             %left-most is first .... [t, t-1, t-2, t-3 .., t-ny]
             Xf{ii,jj} = [Xf{ii,jj}, circshift(f_temp, kk)] ; %+ve k shifts down
         end
         
-        for kk = 0:1:lagNumZ
+        for kk = 0:1:ru
             Xz{ii,jj} = [Xz{ii,jj},circshift(zeta_temp, kk)] ;
         end
         
-        lagNum = max(lagNumF,lagNumZ) ;
+        lagNum = max(ry,ru) ;
         
         % remove first lagNum points
         Xf{ii,jj} = Xf{ii,jj}(lagNum+1:end,:) ;

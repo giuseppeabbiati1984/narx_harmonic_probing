@@ -3,6 +3,10 @@
 % ii) Compute LTF, QTF, and CTF using the numerical harmonic probing algorithm 
 % iii) Comparison against the theoretical solutions for the Duffing oscillator
 
+% This implementation is based on:
+% Stamenov et al. (2025) "Numerical estimation of generalized frequency response functions from time series data using NARX"
+% https://doi.org/10.1016/j.ymssp.2025.113278
+
 close all; clear; clc;
 rng(10, 'twister') ;
 
@@ -19,38 +23,38 @@ odePars.xi = 0.10 ; % damping ratio [  ]
 odePars.c = 2*odePars.xi*sqrt(odePars.k1*odePars.m) ; % damping [Ns/m]
 
 % Time Series Input:
-lagNumY = 3 ; % lag samples on input
-lagNumF = 3 ; % lag samples on output
+ry = 3 ; % lag samples on output
+ru = 3 ; % lag samples on input
 ord = "3" ; % order of the poly-NARX
-numSeg = 10; % number of segments ( >1 )
+numSeg = 3; % number of segments ( >1 )
 lenSeg = 100 ; % number of points in each segment
 fsr = 5000 ; % sampling frequency for ODE
 dtr = 1/fsr ; % reference time step for ODE [s]
-dts = 0.005236 ; % subsampling time step(s) for NARX [s]   opt = 5.236e-3
+dts = 0.005 ; % subsampling time step(s) for NARX [s]   opt = 5.236e-3
 tmax = lenSeg*numSeg*dts;
 tr = 0:dtr:tmax ; % high frequency time axis [s]
 ts = 0:2*max(dts):tmax ; % sampling time axis [s]
 fs = normrnd(0,5,[numel(ts), 1]) ; % input signal [N]
-fr = interp1(ts, fs, tr) ; % nyquist-proof input
+ur = interp1(ts, fs, tr) ; % nyquist-proof input
 clear ts fs
 
 
 %------------------------------------- Harmonic Probing Input: -----------------------------------------------------------------
 diag_offset = 1; % diagonal offset 
-dw_res  = 1; % freq-axis discretization
-w_min = 45; % start frequency on the axis
-w_max = 60; % end frequency on the axis
+dw_res  = 5; % freq-axis discretization
+w_min = 30; % start frequency on the axis
+w_max = 100; % end frequency on the axis
 w1 = w_min:dw_res:floor(w_max/dw_res)*dw_res ; % axis of the LTF, QTF, CTF
 
 % ODE response and force with added noise
 SNRf = 100 ; % signal-to-noise ratio for input
 SNRy = 100 ; % signal-to-noise ratio for output
-odeHandle = @(t, y) fun_ODEduffing(t, y, odePars, tr, fr) ; % state-space definition of the duffing OED
+odeHandle = @(t, y) fun_ODEduffing(t, y, odePars, tr, ur) ; % state-space definition of the duffing OED
 														
-[yr, fr] = fun_ODEeval(odeHandle, tr ,fr, SNRf, SNRy) ; % solving the OED
+[yr, ur] = fun_ODEeval(odeHandle, tr ,ur, SNRf, SNRy) ; % solving the OED
 
 %Compute scaling factors (input and output)
-stdF1 = std(fr) ; % input std. dev. for scaling
+stdF1 = std(ur) ; % input std. dev. for scaling
 stdY1 = std(yr) ; % output std. dev. for scaling
 
 %Compute transfer function scaling factors (nonlinear scaling)
@@ -60,18 +64,17 @@ scale2 = stdY1/stdF1^2 ; % QTF Scale
 scale3 = stdY1/stdF1^3 ; % CTF Scale
 
 % Scale the signals by the std. dev.
-fr_scl = fr/stdF1 ; % Scaled input 
+ur_scl = ur/stdF1 ; % Scaled input 
 yr_scl = yr/stdY1 ; % Scaled output
 
-
 % Segment the data into arrays sutiable for training the NARX model
-[Xy, Xf, Y, tr_ss, zeta_ss, yr_ss] = fun_dataPacking(tr, fr_scl, yr_scl, dts, numSeg, lenSeg, lagNumF, lagNumY) ;
+[Xy, Xu, Y, tr_ss, zeta_ss, yr_ss] = fun_dataPacking(tr, ur_scl, yr_scl, dts, numSeg, lenSeg, ru, ry) ;
 
 %% Training of Poly-NARX
 NARX = cell(size(Xy));
 
     for i = 1:numel(Xy)
-        NARX{i} = fun_poly_NARX(Xy{i}, Xf{i}, Y{i}, ord) ; %Train a NARX model for each of the segments. NARX one-step ahead is loaded based on the input data size
+        NARX{i} = fun_poly_NARX(Xy{i}, Xu{i}, Y{i}, ord) ; %Train a NARX model for each of the segments. NARX one-step ahead is loaded based on the input data size
     end
 %% Compute/Load theoretical transfer functions
 freq_max = 200 ; %max limit of the frequency axis
@@ -104,25 +107,24 @@ H3_mat_sol = zeros(numel(w1), numel(w1),numel(w1),numSeg) ;
 for i = 1:1:size(Y, 2)
 disp(strcat('HP of segment : ', num2str(i), '/', num2str(size(Y, 2)))) ;
 
-    J0 = 0 ; % Constant term
-    J1 = NARX{i}.J(:).' ; % First order array of coefficients (Jacobian)
-    J2 = NARX{i}.H ;	 % Second order array of coefficients (Hessian)	
+    C1 = NARX{i}.C1(:).' ; % First order array of coefficients (Jacobian). [1 x r]
+    C2 = NARX{i}.C2 ; % Second order array of coefficients (Hessian). [r x r]
 
     % Numerical Probing
     % ####### H1 (LTF) ################################
-    H1_scl(i, :) = fun_probing_H1(J0, J1, lagNumY, lagNumF, w1, dts) ; % Numerical probing of LTF
+    H1_scl(i, :) = fun_probing_H1(C1, ry, ru, w1, dts) ; % Numerical probing of LTF
     H1_sol(i, :) = scale1 .* H1_scl(i, :) ; % Unscale the LTF
 
 
     % ####### H2 (QTF) ################################
-    H2_mat_scl(:, :, i) = fun_probing_H2(J0, J1, J2, lagNumY, lagNumF , H1_scl(i, :), w1, dts) ; % Numerical probing of QTF
+    H2_mat_scl(:, :, i) = fun_probing_H2(C1, C2, ry, ru , H1_scl(i, :), w1, dts) ; % Numerical probing of QTF
     H2_mat_sol(:, :, i) = scale2 .* H2_mat_scl(:, :, i); % Unscale the QTF
 
 
     % ####### H3 (CTF) ################################
     if strcmp(ord, "3")
-        T_prob = NARX{i}.T ;
-        H3_mat_scl(:,:,:,i) = fun_probing_H3(J0, J1, J2, T_prob, lagNumY, lagNumF , H1_scl(i, :), H2_mat_scl(:, :, i), w1, dts) ; % % Numerical probing of CTF
+        C3 = NARX{i}.C3 ; % Tensor of NARX coefficients. [r x r x r]
+        H3_mat_scl(:,:,:,i) = fun_probing_H3(C1, C2, C3, ry, ru , H1_scl(i, :), H2_mat_scl(:, :, i), w1, dts) ; % % Numerical probing of CTF
         H3_mat_sol(:,:,:,i) = scale3 .* H3_mat_scl(:,:,:,i) ; % Unscale the CTF
     end
 

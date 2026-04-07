@@ -1,4 +1,4 @@
-function [yr,fr] = fun_ODEeval(odeHandle,tr, fr, SNRf, SNRy)
+function [yr, ur] = fun_ODEeval(odeHandle,tr, ur, SNRf, SNRy)
 % This function evaluates an ODE in state-space 
 
 % Input:
@@ -18,10 +18,10 @@ vi = 0 ;
 yi = [ui;vi] ;
 
 % time integration
-[~,yr] = ode45(odeHandle, tr, yi) ; yr = yr(:,1) ; % displacement
+[~,yr] = ode45(odeHandle, tr, yi) ; yr = yr(:,1) ; % Displacement
 
 % noise contamination
-yr = yr + std(yr) / SNRy * randn(size(yr)) ;
-fr = fr + std(fr) / SNRf * randn(size(fr)) ;
+yr = yr + std(yr) / SNRy * randn(size(yr)) ; % Add noise to the output. Eq. 28. (pg. 6)
+ur = ur + std(ur) / SNRf * randn(size(ur)) ; % Add noise to the output. Eq. 28. (pg. 6)
 
 end
