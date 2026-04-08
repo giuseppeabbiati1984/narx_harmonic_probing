@@ -32,13 +32,9 @@ for j = 1: numel(w1_ax)
         w1 = w1_ax(i) ; % 1st harmonic in rad/s 
         w2 = w1_ax(j) ; % 2nd harmonic in rad/s 
 
-
         % Check for frequency mixing. Line 3 of Algorithm 1. (pg. 6):
-        if round(w1, 5)==0 || round(w2, 5)==0 ...
-	      || w1+w2 == 2*w1 ...
-	      || w1+w2 == 2*w2 ...
-	      || w1 == w2
-
+        w_check = compute_freq_check(2, [w1, w2]); % compute the unidentifiable frequencies
+        if sum(w1+w2==w_check) >0
 	  H2_sol(i, j) = NaN ; % If frequency cannot be probed due to mixing, set NaN for later interp
 	  continue
         end

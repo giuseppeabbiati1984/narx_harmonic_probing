@@ -4,16 +4,16 @@ close all; clear; clc;
 % - the checks on the identifiability of the GRF frequency bin
 
 % order of the GFRF
-n = 2 ;
+n = 3 ;
 
 % input comb
-wu = sym('wu',[n,1]) ;
+wu = sym('wu', [n,1]) ;
 
 %% output comb
 wy = wu ;
 if n > 2
     for i = 1:1:n-2
-        wy = unique(kronsum(wy,wu), 'rows') ;
+        wy = unique(kronsum(wy, wu), 'rows') ;
     end
 end
 wy = [wy; sum(wu)] ;
@@ -23,14 +23,12 @@ wy = unique(wy, 'rows') ;
 we = wy ;
 if n > 1
     for i = 1:1:n-1
-        we = unique(kronsum(we,wy), 'rows') ;
+        we = unique(kronsum(we, wy), 'rows') ;
     end
 end
 we = unique(we, 'rows') ;
 
 % max(abs(we))
-
-
 
 %% check
 
@@ -48,8 +46,8 @@ iq_vec = iq_vec.Variables ;
 % retain only the rows that sum to m
 iq_vec = iq_vec(sum(iq_vec,2)==n,:) ;
 
-% remove the row equal to ones(1,m)
-iq_vec(sum(iq_vec==ones(1,n),2)==2,:) = [] ;
+% remove the row equal to ones(1, m)
+iq_vec(sum(iq_vec==ones(1,n),2)==n,:) = [] ;
 
 % check to verify that the GRF bins are observable
 check = iq_vec*wu==sum(wu) ;
@@ -65,15 +63,15 @@ vars = {wu} ;
 %%
 
 % test of the kronecker sum function
-a = sym('a',[3,1]) ;
-b = sym('b',[2,1]) ;
+a = sym('a', [3,1]) ;
+b = sym('b', [2,1]) ;
 c = kronsum(a,b) ;
 
-function c = kronsum(a,b)
+function c = kronsum(a, b)
 
 Ia = ones(size(a)) ;
 Ib = ones(size(b)) ;
 
-c = kron(a,Ib)+kron(Ia,b) ;
+c = kron(a, Ib) + kron(Ia, b) ;
 
 end

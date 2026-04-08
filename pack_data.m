@@ -1,4 +1,4 @@
-function [Xy, Xu, Y, tr_ss, zf_ss, ff_ss] = pack_data(tr, ur, yr, dts, numSegments, lenSegment, ru, ry)
+function [Xy, Xu, Y, t_ss, u_ss, y_ss] = pack_data(tr, ur, yr, dts, numSegments, lenSegment, ru, ry)
 % This function packages the data into arrays sutable for LASSO regression. 
 
 % INPUT:
@@ -12,7 +12,13 @@ function [Xy, Xu, Y, tr_ss, zf_ss, ff_ss] = pack_data(tr, ur, yr, dts, numSegmen
 % yr: output-vector, raw/unsampled  
 
 % OUTPUT:
-% Xy: cell array of training data 
+% Xy: cell array of lagged output data {}[ lenSeg-ry X ry]
+% Xu: cell array of lagged input data {}[ lenSeg-ru X ru+1]
+% Y: cell array of present-step output data {}[ lenSeg-ry X 1]
+% t_ss: sub-sampled time-vector
+% u_ss: sub-sampled input-vector
+% y_ss: sub-sampled output-vector
+
 
         %ensure column vectors
         tr = reshape(tr,[length(tr), 1]);
@@ -36,9 +42,9 @@ function [Xy, Xu, Y, tr_ss, zf_ss, ff_ss] = pack_data(tr, ur, yr, dts, numSegmen
 
 for ii = 1:numel(SS)
 
-        tr_ss = tr(1:SS(ii):end); %time
-        zf_ss = zf(1:SS(ii):end); %input (wave elevation)
-        ff_ss = ff(1:SS(ii):end); %output (force)
+        t_ss = tr(1:SS(ii):end); %time
+        u_ss = zf(1:SS(ii):end); %input (wave elevation)
+        y_ss = ff(1:SS(ii):end); %output (force)
 
     %% data packking
 
@@ -49,9 +55,9 @@ for ii = 1:numel(SS)
 
         % sample indices corresponding the the segment jj-th
         index = (1:lenSegment) + (jj-1) * lenSegment ;
-        t_temp = tr_ss(index);
-        f_temp = ff_ss(index);
-        zeta_temp = zf_ss(index);
+        t_temp = t_ss(index);
+        f_temp = y_ss(index);
+        zeta_temp = u_ss(index);
 
         Xy{ii,jj} = [] ;
         Xu{ii,jj} = [] ;

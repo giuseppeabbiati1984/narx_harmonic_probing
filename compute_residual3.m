@@ -87,7 +87,7 @@ cube = (1/6) * squeeze( pagemtimes( pagemtimes(Xp, S), Xc ) ); % [numel(t) x 1]
 %========================
 % Residual vector [numel(t) x 1]
 %========================
-eps = y(:, 1) - (lin + quad + cube); % Time-domain residual. r = Volterra - NARX. [numel(t) x 1]. Eq. 24. (pg. 5)
+eps = y(:, 1) - (lin + quad + cube); % Time-domain residual. eps = Volterra - NARX. [numel(t) x 1]. Eq. 24. (pg. 5)
 
 
 %  Double-sided spectrum

@@ -35,7 +35,7 @@ tmax = lenSeg*numSeg*dts;
 tr = 0:dtr:tmax ; % high frequency time axis [s]
 ts = 0:2*max(dts):tmax ; % sampling time axis [s]
 fs = normrnd(0,5,[numel(ts), 1]) ; % input signal [N]
-ur = interp1(ts, fs, tr) ; % nyquist-proof input
+ur = interp1(ts, fs, tr) ; % Nyquist-proof input
 clear ts fs
 
 

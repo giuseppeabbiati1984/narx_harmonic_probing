@@ -1,6 +1,15 @@
 function [dt, t] = find_freq(w, dw)
 % This function determines the length of the signal needed to avoid leakage in the DFT computation.
 
+% INPUT:
+% w: frequencies involved in the probing
+% dw: frequency resolution
+
+%OUTPUT:
+% dt: time-step
+% t: time-vector the prevents leakage
+
+
 if numel(w) > 3 % check if the supplied frequncies are fewer than 3
     errordlg('Error in number of harmonics sent. Should be 1, 2 or 3')
     return

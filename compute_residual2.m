@@ -40,8 +40,7 @@ y = ...
 
 X_vec = [y(:, 2:end), u] ; % input vector. [numel(t) x r]
 
-
-eps = y(:, 1).' - ((C1 * X_vec.')  +  1/2 * sum(X_vec * C2 .* X_vec, 2).');  % Time-domain residual. r = Volterra - NARX. [1 x numel(t)]. Eq. 24. (pg. 5)
+eps = y(:, 1).' - ((C1 * X_vec.')  +  1/2 * sum(X_vec * C2 .* X_vec, 2).');  % Time-domain residual. eps = Volterra - NARX. [1 x numel(t)]. Eq. 24. (pg. 5)
 
 
 %  Double-sided spectrum

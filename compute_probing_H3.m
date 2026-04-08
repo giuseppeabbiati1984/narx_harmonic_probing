@@ -28,7 +28,6 @@ H3_sol = ones( [ numel(w1_ax), numel(w1_ax),  numel(w1_ax)] )./1e5 ...
     +  1i*ones( [ numel(w1_ax), numel(w1_ax),  numel(w1_ax)]  )./1e5 ; % Declare an empty array
 
 dw = w1_ax(2) - w1_ax(1) ; % Frequency grid discretization
-
 % Loop through all freqeuncy axes
 for k = 1 : numel(w1_ax)
     for j = 1 : numel(w1_ax)
@@ -51,21 +50,15 @@ for k = 1 : numel(w1_ax)
 	   H2w2w3 = interp2(w1_ax, w1_ax, H2, w2, w3, 'spline', 0) ; % Ensure H2 value is available at w2,w3
 
 
-	   % Check for frequency mixing. Line 3 of Algorithm1. (pg. 6):
-	   if round(w1, 5)==0 || round(w2, 5)==0 || round(w3, 5)==0 || ...
-		 w1+w2+w3 == 3*w1 || ...
-		 w1+w2+w3 == 3*w2 || ...
-		 w1+w2+w3 == 3*w3 || ...
-		 w1+w2+w3 == 2*w1 + w3 || ...
-		 w1+w2+w3 == 2*w1 + w2 || ...
-		 w1+w2+w3 == 2*w2 + w1 || ...
-		 w1+w2+w3 == 2*w1 + w3 || ...
-		 w1+w2+w3 == 2*w3 + w1 || ...
-		 w1+w2+w3 == 2*w3 + w2
-
-	       H3_sol(i, j, k) = NaN ;
+	   % Check for frequency mixing. Line 3 of Algorithm 1. (pg. 6):
+	   w_check = compute_freq_check(3, [w1, w2, w3]); % compute the unidentifiable frequencies
+	   if sum(w1+w2+w3 == w_check) >0
+	       H3_sol(i, j, k) = NaN ; % If frequency cannot be probed due to mixing, set NaN for later interp
 	       continue
 	   end
+
+
+
 
 	  [~, t] = find_freq([abs(w1), abs(w2), abs(w3)], dw) ; % find t that gives no leakage
 
