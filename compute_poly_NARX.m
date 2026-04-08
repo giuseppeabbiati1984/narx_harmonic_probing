@@ -1,4 +1,4 @@
-function NARX = fun_poly_NARX(Xy, Xu, Yy, ord, varargin)
+function NARX = compute_poly_NARX(Xy, Xu, Yy, ord, varargin)
 %This function trains a polynomial NARX with a LASSO regression. 
 % This function calls up symbolically generated functions from "script_symbolic_poly_gen.m"  
 
