@@ -1,11 +1,11 @@
-function H3_sol = fun_probing_H3(C1, C2, C3, ry, ru, H1, H2, w1_ax, dts)
+function H3_sol = compute_probing_H3(C1, C2, C3, ry, ru, H1, H2, w1_ax, dts)
 % This function estimates the cubic transfer function based on a polynomial NARX model.
 % This function performs Harmonic Probing numerically by minimizing different points on the frequency spectrum.
 % The equation references in this function refer to the paper:
 % Stamenov et al. (2025) "Numerical estimation of generalized frequency response functions from time series data using NARX"
 % https://doi.org/10.1016/j.ymssp.2025.113278
 
-% INPUT description:
+% INPUT:
 % ry: Lags on output signal
 % ru: Lags on input signal
 % r = ry + ru + 1: Total length of the input vector
@@ -16,6 +16,9 @@ function H3_sol = fun_probing_H3(C1, C2, C3, ry, ru, H1, H2, w1_ax, dts)
 % dts: time-step [s]
 % H1: linear GFRF
 % H2: quadratic GFRF
+
+% OUTPUT:
+% H3_sol: estimated complex values for the cubic GFRF at frequency-triplets defined by the grid (w1_ax X w1_ax X w1_ax)
 
 % Point at which to evaluate the residual. That is, z represents trial values for the GFRF (H3)
 z1 = 1; % Point 1 for eval of residual
@@ -64,16 +67,16 @@ for k = 1 : numel(w1_ax)
 	       continue
 	   end
 
-	  [~, t] = fun_freq_finder([abs(w1), abs(w2), abs(w3)], dw) ; % find t that gives no leakage
+	  [~, t] = find_freq([abs(w1), abs(w2), abs(w3)], dw) ; % find t that gives no leakage
 
-	  [~, R, freq] = fun_residual3(C1, C2, C3, H1w1, H1w2, H1w3,...
+	  [~, R, freq] = compute_residual3(C1, C2, C3, H1w1, H1w2, H1w3,...
 	      H2w1w1, H2w2w2, H2w3w3, H2w1w2, H2w1w3, H2w2w3,...
 	      z1, ry, ru, w1, w2, w3, dts, t) ; % Compute the residual for Point 1. Line 20 (pg. 6)
 	  [~, index] = min(abs(freq - (w1+w2+w3)/(2*pi) )) ; % Identify the correct index (freqeuncy bin)
 	  delta_1 =  R(index);
 
 
-	  [~, R, freq] = fun_residual3(C1, C2, C3, H1w1, H1w2, H1w3,...
+	  [~, R, freq] = compute_residual3(C1, C2, C3, H1w1, H1w2, H1w3,...
 	      H2w1w1, H2w2w2, H2w3w3, H2w1w2, H2w1w3, H2w2w3,...
 	      z2, ry, ru, w1, w2, w3, dts, t) ; % Compute the residual for Point 1. Line 19 (pg. 6)
 	  [~, index] = min(abs(freq - (w1+w2+w3)/(2*pi) )) ; % Identify the correct index (freqeuncy bin)

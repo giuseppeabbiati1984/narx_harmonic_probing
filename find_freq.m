@@ -1,4 +1,4 @@
-function [dt, t] = fun_freq_finder(w, dw)
+function [dt, t] = find_freq(w, dw)
 % This function determines the length of the signal needed to avoid leakage in the DFT computation.
 
 if numel(w) > 3 % check if the supplied frequncies are fewer than 3
@@ -15,11 +15,9 @@ if ~mod(r, 1) == 0 % Checks if the r is NOT an integer (if not enter if-statemen
     return
 end
 
-
 if isempty(t) % Check for empty vector
     errordlg("Time vector is empty!")
     return
 end
-
 
 end

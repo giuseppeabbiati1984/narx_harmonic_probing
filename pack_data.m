@@ -1,10 +1,23 @@
-function [Xf, Xz, F, tr_ss, zf_ss, ff_ss] = fun_dataPacking(tr, zr, fr, dts, numSegments, lenSegment, ru, ry)
+function [Xy, Xu, Y, tr_ss, zf_ss, ff_ss] = pack_data(tr, ur, yr, dts, numSegments, lenSegment, ru, ry)
 % This function packages the data into arrays sutable for LASSO regression. 
+
+% INPUT:
+% ry: Lags on output signal
+% ru: Lags on input signal
+% numSegments: number of segments for the data to be partitioned in
+% lenSegment: length of each segment
+% dts: time-step for the sub-sampling
+% tr: time-vector [s]
+% ur: input-vector, raw/unsampled  
+% yr: output-vector, raw/unsampled  
+
+% OUTPUT:
+% Xy: cell array of training data 
 
         %ensure column vectors
         tr = reshape(tr,[length(tr), 1]);
-        zr = reshape(zr,[length(zr), 1]);
-        fr = reshape(fr,[length(fr), 1]);
+        ur = reshape(ur,[length(ur), 1]);
+        yr = reshape(yr,[length(yr), 1]);
 
         dt = tr(2)-tr(1);
 
@@ -18,8 +31,8 @@ function [Xf, Xz, F, tr_ss, zf_ss, ff_ss] = fun_dataPacking(tr, zr, fr, dts, num
 
         % Construct a causal filter
         [b, a] = butter(3, 1/SS, 'low') ;
-        ff = filter(b, a, fr) ; % filtered force signal (time domain)
-        zf = filter(b, a, zr) ; % filtered wave elevation signal (time domain)
+        ff = filter(b, a, yr) ; % filtered force signal (time domain)
+        zf = filter(b, a, ur) ; % filtered wave elevation signal (time domain)
 
 for ii = 1:numel(SS)
 
@@ -40,24 +53,24 @@ for ii = 1:numel(SS)
         f_temp = ff_ss(index);
         zeta_temp = zf_ss(index);
 
-        Xf{ii,jj} = [] ;
-        Xz{ii,jj} = [] ;
+        Xy{ii,jj} = [] ;
+        Xu{ii,jj} = [] ;
         
         for kk = 1:1:ry
             %left-most is first .... [t, t-1, t-2, t-3 .., t-ny]
-            Xf{ii,jj} = [Xf{ii,jj}, circshift(f_temp, kk)] ; %+ve k shifts down
+            Xy{ii,jj} = [Xy{ii,jj}, circshift(f_temp, kk)] ; %+ve k shifts down
         end
         
         for kk = 0:1:ru
-            Xz{ii,jj} = [Xz{ii,jj},circshift(zeta_temp, kk)] ;
+            Xu{ii,jj} = [Xu{ii,jj},circshift(zeta_temp, kk)] ;
         end
         
         lagNum = max(ry,ru) ;
         
         % remove first lagNum points
-        Xf{ii,jj} = Xf{ii,jj}(lagNum+1:end,:) ;
-        Xz{ii,jj} = Xz{ii,jj}(lagNum+1:end,:) ;
-        F{ii,jj} =  f_temp(lagNum+1:end,:) ;
+        Xy{ii,jj} = Xy{ii,jj}(lagNum+1:end,:) ;
+        Xu{ii,jj} = Xu{ii,jj}(lagNum+1:end,:) ;
+        Y{ii,jj} =  f_temp(lagNum+1:end,:) ;
            
     end
     

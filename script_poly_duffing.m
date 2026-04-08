@@ -1,5 +1,5 @@
 % The following code illustrates:
-%  i) training of Polynomial-NARX on input/output data of a Duffing oscillator 
+% i) Training of Polynomial-NARX on input/output data of a Duffing oscillator 
 % ii) Compute LTF, QTF, and CTF using the numerical harmonic probing algorithm 
 % iii) Comparison against the theoretical solutions for the Duffing oscillator
 
@@ -49,9 +49,9 @@ w1 = w_min:dw_res:floor(w_max/dw_res)*dw_res ; % axis of the LTF, QTF, CTF
 % ODE response and force with added noise
 SNRf = 100 ; % signal-to-noise ratio for input
 SNRy = 100 ; % signal-to-noise ratio for output
-odeHandle = @(t, y) fun_ODEduffing(t, y, odePars, tr, ur) ; % state-space definition of the duffing OED
+odeHandle = @(t, y) compute_ODEduffing(t, y, odePars, tr, ur) ; % state-space definition of the duffing OED
 														
-[yr, ur] = fun_ODEeval(odeHandle, tr ,ur, SNRf, SNRy) ; % solving the OED
+[yr, ur] = compute_ODE(odeHandle, tr ,ur, SNRf, SNRy) ; % solving the OED
 
 %Compute scaling factors (input and output)
 stdF1 = std(ur) ; % input std. dev. for scaling
@@ -68,13 +68,13 @@ ur_scl = ur/stdF1 ; % Scaled input
 yr_scl = yr/stdY1 ; % Scaled output
 
 % Segment the data into arrays sutiable for training the NARX model
-[Xy, Xu, Y, tr_ss, zeta_ss, yr_ss] = fun_dataPacking(tr, ur_scl, yr_scl, dts, numSeg, lenSeg, ru, ry) ;
+[Xy, Xu, Y, tr_ss, zeta_ss, yr_ss] = pack_data(tr, ur_scl, yr_scl, dts, numSeg, lenSeg, ru, ry) ;
 
 %% Training of Poly-NARX
 NARX = cell(size(Xy));
 
     for i = 1:numel(Xy)
-        NARX{i} = fun_poly_NARX(Xy{i}, Xu{i}, Y{i}, ord) ; %Train a NARX model for each of the segments. NARX one-step ahead is loaded based on the input data size
+        NARX{i} = compute_poly_NARX(Xy{i}, Xu{i}, Y{i}, ord) ; %Train a NARX model for each of the segments. NARX one-step ahead is loaded based on the input data size
     end
 %% Compute/Load theoretical transfer functions
 freq_max = 200 ; %max limit of the frequency axis
@@ -112,19 +112,19 @@ disp(strcat('HP of segment : ', num2str(i), '/', num2str(size(Y, 2)))) ;
 
     % Numerical Probing
     % ####### H1 (LTF) ################################
-    H1_scl(i, :) = fun_probing_H1(C1, ry, ru, w1, dts) ; % Numerical probing of LTF
+    H1_scl(i, :) = compute_probing_H1(C1, ry, ru, w1, dts) ; % Numerical probing of LTF
     H1_sol(i, :) = scale1 .* H1_scl(i, :) ; % Unscale the LTF
 
 
     % ####### H2 (QTF) ################################
-    H2_mat_scl(:, :, i) = fun_probing_H2(C1, C2, ry, ru , H1_scl(i, :), w1, dts) ; % Numerical probing of QTF
+    H2_mat_scl(:, :, i) = compute_probing_H2(C1, C2, ry, ru , H1_scl(i, :), w1, dts) ; % Numerical probing of QTF
     H2_mat_sol(:, :, i) = scale2 .* H2_mat_scl(:, :, i); % Unscale the QTF
 
 
     % ####### H3 (CTF) ################################
     if strcmp(ord, "3")
         C3 = NARX{i}.C3 ; % Tensor of NARX coefficients. [r x r x r]
-        H3_mat_scl(:,:,:,i) = fun_probing_H3(C1, C2, C3, ry, ru , H1_scl(i, :), H2_mat_scl(:, :, i), w1, dts) ; % % Numerical probing of CTF
+        H3_mat_scl(:,:,:,i) = compute_probing_H3(C1, C2, C3, ry, ru , H1_scl(i, :), H2_mat_scl(:, :, i), w1, dts) ; % % Numerical probing of CTF
         H3_mat_sol(:,:,:,i) = scale3 .* H3_mat_scl(:,:,:,i) ; % Unscale the CTF
     end
 

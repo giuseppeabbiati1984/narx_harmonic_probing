@@ -1,4 +1,4 @@
-function [eps, R, freq] = fun_residual2(C1, C2, H1w1, H1w2, H2w1w2, ry, ru, w1, w2, dts, t)
+function [eps, Eps, f_ax] = compute_residual2(C1, C2, H1w1, H1w2, H2w1w2, ry, ru, w1, w2, dts, t)
 %This function calcualtes the residual between a 2nd-order NARX model and 2nd order Volterra expansion
 % The computation is vectorized for efficiency
 
@@ -15,6 +15,13 @@ function [eps, R, freq] = fun_residual2(C1, C2, H1w1, H1w2, H2w1w2, ry, ru, w1, 
 % w2: frequency value for probing [rad/s]
 % dts: time-step [s]
 % t: time-vector [s]
+
+% OUTPUT:
+% eps: time-domain residual, eps = Volterra - NARX. [1 x numel(t)]
+% Eps: frequncy-domain residual [numel(t) x 1]
+% f_ax: frequncy axis [Hz] [1 x numel(t)]
+
+
 
 % fs = 1/(t(2) - t(1));
 dt = (t(end) - t(1))/(length(t) - 1); % Obtain the time-step for computing the frequency axis of the DFT
@@ -43,7 +50,7 @@ L = numel(t) ;
 
 P2 = (Y/L) ; % Scale the amplitude
 
-freq =  fs/L*(-(L)/2 : (L-1)/2) ; % Frequncy axis of the DFT in hertz = 1/s
-R = transpose(P2) ;
+f_ax =  fs/L*(-(L)/2 : (L-1)/2) ; % Frequncy axis of the DFT in hertz = 1/s
+Eps = transpose(P2) ;
 
 end

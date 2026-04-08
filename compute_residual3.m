@@ -1,4 +1,4 @@
-function [eps, R, freq] = fun_residual3(C1, C2, C3, H1w1, H1w2, H1w3,...
+function [eps, Eps, f_ax] = compute_residual3(C1, C2, C3, H1w1, H1w2, H1w3,...
     H2w1w1, H2w2w2, H2w3w3, H2w1w2, H2w1w3, H2w2w3, H3w1w2w3, ry, ru, w1, w2, w3, dts, t)
 %This function calcualtes the residual between a 3rd-order NARX model and 3rd-order Volterra expansion
 % The computation is vectorized for efficiency
@@ -23,6 +23,10 @@ function [eps, R, freq] = fun_residual3(C1, C2, C3, H1w1, H1w2, H1w3,...
 % dts: time-step [s]
 % t: time-vector [s]
 
+% OUTPUT:
+% eps: time-domain residual, eps = Volterra - NARX. [1 x numel(t)]
+% Eps: frequncy-domain residual [numel(t) x 1]
+% f_ax: frequncy axis [Hz] [1 x numel(t)]
 
 dt = (t(end) - t(1))/(length(t) - 1); % Obtain the time-step for computing the frequency axis of the DFT
 fs = 1/dt;  % Obtain frequency discretization of the axis of the DFT
@@ -92,7 +96,7 @@ L = numel(t) ;
 
 P2 = Y/(L) ; % Scale the amplitude
 
-freq =  fs*(-L/2 : L/2-1)/L ; % Frequncy axis of the DFT in hertz = 1/s
-R = transpose(P2) ;
+f_ax =  fs*(-L/2 : L/2-1)/L ; % Frequncy axis of the DFT in hertz = 1/s
+Eps = transpose(P2) ;
 
 end
