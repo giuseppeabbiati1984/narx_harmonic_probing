@@ -1,81 +1,28 @@
-% The following code illustrates:
-% i) Training of Polynomial-NARX on input/output data of a Duffing oscillator 
-% ii) Compute LTF, QTF, and CTF using the numerical harmonic probing algorithm 
-% iii) Comparison against the theoretical solutions for the Duffing oscillator
-
-% This implementation is based on:
+%% ######## NUMERICAL HARMONIC PROBING  ########################
+% This is the main script of the harmonic probing implementation. It is based on:
 % Stamenov et al. (2025) "Numerical estimation of generalized frequency response functions from time series data using NARX"
 % https://doi.org/10.1016/j.ymssp.2025.113278
 
 close all; clear; clc;
 rng(10, 'twister') ;
 
-%% ######## GENERATE NUMERICAL DUFFING DATA  ########################
+% The following code illustrates:
+% i) Loads synthetic data generated from "script_data_gen"
+% ii) Segments and trains the polynomial-NARX on input/output data of a Duffing oscillator
+% iii) Computes LTF, QTF, and CTF using the numerical harmonic probing algorithm
+% iv) Compares against the theoretical solutions for the Duffing oscillator
 
-%------------------------------------- Oscillator input: ----------------------------------------------------------------------------
-odePars.m = 1 ; % mass [kg]
-odePars.k1 = 1e4 ; % stiffness (linear) [N/m] 
-odePars.k2 = 1e7 ; % stiffness (quadratic) [N/m2]
-odePars.k3 = 5e9 ; % stiffness (cubic) [N/m3]
-odePars.w0 = sqrt(odePars.k1/odePars.m) ; % modal frequency [rad/s]
-odePars.f0 = odePars.w0/(2*pi) ; % modal frequency [Hz]
-odePars.xi = 0.10 ; % damping ratio [  ]
-odePars.c = 2*odePars.xi*sqrt(odePars.k1*odePars.m) ; % damping [Ns/m]
-
-% Time Series Input:
-ry = 3 ; % lag samples on output
-ru = 3 ; % lag samples on input
-ord = "3" ; % order of the poly-NARX
-numSeg = 3; % number of segments ( >1 )
-lenSeg = 100 ; % number of points in each segment
-fsr = 5000 ; % sampling frequency for ODE
-dtr = 1/fsr ; % reference time step for ODE [s]
-dts = 0.005 ; % subsampling time step(s) for NARX [s]   opt = 5.236e-3
-tmax = lenSeg*numSeg*dts;
-tr = 0:dtr:tmax ; % high frequency time axis [s]
-ts = 0:2*max(dts):tmax ; % sampling time axis [s]
-fs = normrnd(0,5,[numel(ts), 1]) ; % input signal [N]
-ur = interp1(ts, fs, tr) ; % Nyquist-proof input
-clear ts fs
-
-
-%------------------------------------- Harmonic Probing Input: -----------------------------------------------------------------
-diag_offset = 1; % diagonal offset 
-dw_res  = 5; % freq-axis discretization
-w_min = 30; % start frequency on the axis
-w_max = 100; % end frequency on the axis
-w1 = w_min:dw_res:floor(w_max/dw_res)*dw_res ; % axis of the LTF, QTF, CTF
-
-% ODE response and force with added noise
-SNRf = 100 ; % signal-to-noise ratio for input
-SNRy = 100 ; % signal-to-noise ratio for output
-odeHandle = @(t, y) compute_ODEduffing(t, y, odePars, tr, ur) ; % state-space definition of the duffing OED
-														
-[yr, ur] = compute_ODE(odeHandle, tr ,ur, SNRf, SNRy) ; % solving the OED
-
-%Compute scaling factors (input and output)
-stdF1 = std(ur) ; % input std. dev. for scaling
-stdY1 = std(yr) ; % output std. dev. for scaling
-
-%Compute transfer function scaling factors (nonlinear scaling)
-scale0 = stdY1/stdF1^0 ; 
-scale1 = stdY1/stdF1^1 ; % LTF Scale
-scale2 = stdY1/stdF1^2 ; % QTF Scale
-scale3 = stdY1/stdF1^3 ; % CTF Scale
-
-% Scale the signals by the std. dev.
-ur_scl = ur/stdF1 ; % Scaled input 
-yr_scl = yr/stdY1 ; % Scaled output
+load duff_train_data.mat % load the syntehtic data generated from "script_data_gen"
 
 % Segment the data into arrays sutiable for training the NARX model
 [Xy, Xu, Y, tr_ss, zeta_ss, yr_ss] = pack_data(tr, ur_scl, yr_scl, dts, numSeg, lenSeg, ru, ry) ;
 
-%% Training of Poly-NARX
+% Training of Poly-NARX:
 NARX = cell(size(Xy));
 
-    for i = 1:numel(Xy)
-        NARX{i} = compute_poly_NARX(Xy{i}, Xu{i}, Y{i}, ord) ; %Train a NARX model for each of the segments. NARX one-step ahead is loaded based on the input data size
-    end
+for i = 1:numel(Xy)
+    NARX{i} = compute_poly_NARX(Xy{i}, Xu{i}, Y{i}, ord) ; %Train a NARX model for each of the segments. NARX one-step ahead is loaded based on the input data size
+end
 %% Compute/Load theoretical transfer functions
 freq_max = 200 ; %max limit of the frequency axis
 
@@ -151,7 +98,7 @@ x_plot =[w1, fliplr(w1)];
 
 
 % ########PLOT LTF REAL PART ##################################
-    figure('Renderer', 'painters', 'Position', [10, 100, 800, 900]) ;
+    figure('Renderer', 'painters', 'Position', [10, 100, 800, 900]) ; %#ok<*FGREN>
      subplot(2,1,1);  hold on;  box on; set(gca, 'FontSize',  PlotFontSize) ;
 
      f3 = fill(x_plot, real(y_plot3), 1,'facecolor', Color3, 'edgecolor', 'none', 'facealpha', 0.2);
@@ -175,15 +122,15 @@ x_plot =[w1, fliplr(w1)];
      % ########PLOT LTF IMAGINARY PART ##################################
      subplot(2,1,2); hold on; box on; set(gca,'FontSize',  PlotFontSize)
 
-     f3 = fill(x_plot, imag(y_plot3), 1,'facecolor', Color3, 'edgecolor', 'none', 'facealpha', 0.2);
-     f2 = fill(x_plot, imag(y_plot2), 1,'facecolor', Color2, 'edgecolor', 'none', 'facealpha', 0.3) ; % fill plot of the std. dev.
+     fill(x_plot, imag(y_plot3), 1,'facecolor', Color3, 'edgecolor', 'none', 'facealpha', 0.2);
+     fill(x_plot, imag(y_plot2), 1,'facecolor', Color2, 'edgecolor', 'none', 'facealpha', 0.3) ; % fill plot of the std. dev.
 
      for i = 1:size(H1_sol,1)
           h1 = plot(w1, imag(H1_sol(i, :)),  'kx',  'Color', color4, 'HandleVisibility','off'); 
      end
 
-     h2 = plot(w_dbl_exact, imag(H1_exact), 'r-', 'linewidth', 1.5) ; % exact solution 
-     hm = plot(w1, imag(H1_mean), 'bx','linewidth', 1.5) ; % mean of all samples
+     plot(w_dbl_exact, imag(H1_exact), 'r-', 'linewidth', 1.5) ; % exact solution 
+    plot(w1, imag(H1_mean), 'bx','linewidth', 1.5) ; % mean of all samples
      ylim(1.2*[y_min, y_max]); xlim([0, w_dbl_exact(end)]);
      xlabel('$\omega_1$ [rad/s]','Interpreter','latex')
      ylabel('$\Im(H^{(1)})$','Interpreter','latex')
@@ -234,7 +181,7 @@ y_plot3=[H2_3std(1, :), fliplr(H2_3std(2, :))] ;
      ylim(1.2*[y_min, y_max]); xlim([0, w_dbl_exact(end)]);
      % title({[strcat(' Freq. $\Delta \omega =$', num2str(dw), ' rad/s, ')]; ...
      % [strcat(' $\omega_n =$', num2str(round(wn)), ' rad/s')]}, 'Interpreter','latex')
-     title({["Quadratic"]; ...
+     title({"Quadratic"; ...
           [strcat("$ |\omega_2 - \omega_1| =", num2str(dw_res*diag_offset) ,"~r/s$")]}, 'Interpreter','latex',"FontSize", PlotFontSize) 
      xlabel('$\omega_1$ [rad/s]','Interpreter','latex')
      ylabel('$\Re(H^{(2)})$','Interpreter','latex')
@@ -244,15 +191,15 @@ y_plot3=[H2_3std(1, :), fliplr(H2_3std(2, :))] ;
      % ########PLOT QTF IMAGINARY PART ##################################
      subplot(2,1,2); hold on; box on; set(gca,'FontSize',  PlotFontSize)
 
-     f3 = fill(x_plot, imag(y_plot3), 1,'facecolor', Color3, 'edgecolor', 'none', 'facealpha', 0.2);
-     f2 = fill(x_plot, imag(y_plot2), 1,'facecolor', Color2, 'edgecolor', 'none', 'facealpha', 0.3);
+    fill(x_plot, imag(y_plot3), 1,'facecolor', Color3, 'edgecolor', 'none', 'facealpha', 0.2);
+    fill(x_plot, imag(y_plot2), 1,'facecolor', Color2, 'edgecolor', 'none', 'facealpha', 0.3);
 
      for j = 1:size(H2_sol,1)
         h1 =  plot(w1(1:end-diag_offset), imag(H2_sol(j, :)), 'kx', 'Color', color4, 'HandleVisibility','off'); 
      end
 
-     h2 = plot(w_dbl_exact, imag(H2_exact_diag), 'r-', 'linewidth', 1.5) ; % exact solution 
-     hm = plot(w1(1:end-diag_offset), imag(H2_mean), 'bx','linewidth', 1.5) ; % mean of all samples
+     plot(w_dbl_exact, imag(H2_exact_diag), 'r-', 'linewidth', 1.5) ; % exact solution 
+     plot(w1(1:end-diag_offset), imag(H2_mean), 'bx','linewidth', 1.5) ; % mean of all samples
 
      ylim(1.2*[y_min, y_max]); xlim([0, w_dbl_exact(end)]);
      xlabel('$\omega_1$ [rad/s]','Interpreter','latex')
@@ -321,7 +268,7 @@ y_plot3=[H3_3std(1, :), fliplr(H3_3std(2, :))] ;
 
      ylim(1.2*[y_min, y_max]); xlim([0, w_dbl_exact(end)]);
 
-     title({['Cubic'] ...
+     title({'Cubic' ...
          [strcat("$ |\omega_2 - \omega_1| = $", num2str(diag_offset*dw_res), " rad/s ")]...
          [strcat("$ |\omega_3 - \omega_2| = $", num2str(diag_offset*dw_res), " rad/s ")]}, 'Interpreter','latex',"FontSize", PlotFontSize) 
      xlabel('$\omega_1$ [rad/s]','Interpreter','latex')

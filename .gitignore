@@ -40,3 +40,4 @@ codegen/
 # Project files and folders
 *.prj
 resources/
+/script_narx_gen.m

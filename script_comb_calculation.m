@@ -1,5 +1,5 @@
 close all; clear; clc;
-% this script shows how to compute:
+% This script shows how to compute:
 % - the frequency combs of output and residual for an input frequency bin
 % - the checks on the identifiability of the GRF frequency bin
 

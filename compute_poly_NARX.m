@@ -1,6 +1,15 @@
-function NARX = compute_poly_NARX(Xy, Xu, Yy, ord, varargin)
+function NARX = compute_poly_NARX(Xy, Xu, Y, ord, varargin)
 %This function trains a polynomial NARX with a LASSO regression. 
 % This function calls up symbolically generated functions from "script_symbolic_poly_gen.m"  
+
+% INPUT:
+% Xy: cell array of lagged output data {}[ lenSeg-ry X ry]
+% Xu: cell array of lagged input data {}[ lenSeg-ru X ru+1]
+% Y: cell array of present-step output data {}[ lenSeg-ry X 1]
+% ord: order of the NARX model
+
+% OUTPUT:
+% NARX: structure holding the training coefficients and other model parameters
 
 if numel(varargin) > 0
 	Lamb_val = varargin{1} ;
@@ -8,19 +17,16 @@ else
 	Lamb_val = 0.01 ;
 end
 
-
-% lag samples
-NARX.lagNumY = size(Xy, 2) ;  % response signal
-NARX.lagNumU = size(Xu, 2) ;  % loading signal
-
+NARX.lagNumY = size(Xy, 2) ;  % number of lags on the response signal
+NARX.lagNumU = size(Xu, 2) ;  % numer of lags on the loading signal
 %% Train Poly-NARX
 
 % data setup
 x = [Xy, Xu] ; %vector of input and output lags
-y = Yy ; %vector of outputs
+y = Y ; %vector of outputs
 
 %Create a string with the name of the function based on nf and nz
-string_fun_p = ['fun_p_nf' num2str(NARX.lagNumY), 'nz' , num2str(NARX.lagNumU), '_ord', num2str(ord), '(x)'] ;
+string_fun_p = ['fun_p_ry' num2str(NARX.lagNumY), 'ru' , num2str(NARX.lagNumU-1), '_ord', num2str(ord), '(x)'] ;
 
 % evaluate the regressors
 p = eval(string_fun_p) ; %coeff. from x combined in front of each term in J and H
@@ -82,16 +88,16 @@ NARX.nonzero_indices = nonzero_indices;
 NARX.FitInfo = FitInfo;
 
 %Create a function name strings for calling for J and H based on nf and nz
-string_fun_J = strcat('fun_J_nf', num2str(NARX.lagNumY), 'nz' , num2str(NARX.lagNumU), '_ord', num2str(ord), "(a_ls1_ext.')") ;
+string_fun_J = strcat('fun_J_ry', num2str(NARX.lagNumY), 'ru' , num2str(NARX.lagNumU-1), '_ord', num2str(ord), "(a_ls1_ext.')") ;
 NARX.C1(:) =  eval(string_fun_J)  ; % reconstruction of sparse Jacobian
 
 if ord == "2" || ord == "3" || ord =="2O" || ord =="23O"
-string_fun_H = strcat('fun_H_nf', num2str(NARX.lagNumY), 'nz' , num2str(NARX.lagNumU), '_ord', num2str(ord), "(a_ls1_ext.')") ;
+string_fun_H = strcat('fun_H_ry', num2str(NARX.lagNumY), 'ru' , num2str(NARX.lagNumU-1), '_ord', num2str(ord), "(a_ls1_ext.')") ;
 NARX.C2(:, :) = eval(string_fun_H) ; % reconstruction of sparse Hessian
 end
 
 if ord == "3" || ord =="23O"
-string_fun_T = strcat('fun_T_nf', num2str(NARX.lagNumY), 'nz' , num2str(NARX.lagNumU), '_ord', num2str(ord), "(a_ls1_ext.')") ;
+string_fun_T = strcat('fun_T_ry', num2str(NARX.lagNumY), 'ru' , num2str(NARX.lagNumU-1), '_ord', num2str(ord), "(a_ls1_ext.')") ;
 NARX.C3(:, :, :) = eval(string_fun_T) ; % reconstruction of sparse Tensor
 end
 
