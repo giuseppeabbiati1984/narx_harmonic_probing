@@ -1,4 +1,5 @@
-function dydt = fun_ODEduffing(t,y,odePars,tr,fr)
+function dydt = compute_SSduffing(t, y,odePars,tr,fr)
+% Setup a state-space model of the duffing oscillator
 
     % interpolation of the applied loading
     f = interp1(tr, fr, t) ;

@@ -21,7 +21,8 @@ load duff_train_data.mat % load the syntehtic data generated from "script_data_g
 NARX = cell(size(Xy));
 
 for i = 1:numel(Xy)
-    NARX{i} = compute_poly_NARX(Xy{i}, Xu{i}, Y{i}, ord) ; %Train a NARX model for each of the segments. NARX one-step ahead is loaded based on the input data size
+    %Train a NARX model for each of segment. NARX one-step ahead is loaded based on the input data size:
+    NARX{i} = compute_poly_NARX(Xy{i}, Xu{i}, Y{i}, ord); 
 end
 %% Compute/Load theoretical transfer functions
 freq_max = 200 ; %max limit of the frequency axis
