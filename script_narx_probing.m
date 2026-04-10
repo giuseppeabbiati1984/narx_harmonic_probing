@@ -12,6 +12,14 @@ rng(10, 'twister') ;
 % iii) Computes LTF, QTF, and CTF using the numerical harmonic probing algorithm
 % iv) Compares against the theoretical solutions for the Duffing oscillator
 
+%------------------------------------- Harmonic Probing Input: -----------------------------------------------------------------
+dw_res  = 5; % probing frequency axis discretization
+w_min = 30; % start frequency on the probing axis
+w_max = 100; % end frequency on the probing axis
+diag_offset = 1; % diagonal to plot (for order > 1)  
+w1 = w_min:dw_res:floor(w_max/dw_res)*dw_res ; % frequency axis of the LTF, QTF, CTF
+recomp_TF = 0 ; % switch 0: use precomputed analytical transfer function results. 1: re-compute the results
+
 load duff_train_data.mat % load the syntehtic data generated from "script_data_gen"
 
 % Segment the data into arrays sutiable for training the NARX model
@@ -19,21 +27,22 @@ load duff_train_data.mat % load the syntehtic data generated from "script_data_g
 
 % Training of Poly-NARX:
 NARX = cell(size(Xy));
-
 for i = 1:numel(Xy)
     %Train a NARX model for each of segment. NARX one-step ahead is loaded based on the input data size:
-    NARX{i} = compute_poly_NARX(Xy{i}, Xu{i}, Y{i}, ord); 
+    NARX{i} = train_NARX(Xy{i}, Xu{i}, Y{i}, ord); 
 end
 %% Compute/Load theoretical transfer functions
+
+% Block to compute analytical transfer functions or load pre-computed data:
 freq_max = 200 ; %max limit of the frequency axis
-
-%Uncomment to compute theoretical values at a particular frequency discretization
-% freq_disc = 4; %discretization of the frequency axis [rad/s]
-% w_theo = [0:freq_disc:freq_max] ; % Discretization of the frequncy axis
-% [H1_course, H2_course, H3_course, w_dbl_course] = fun_analytical_duffing(odePars, w_theo) ;
-% save DuffTF_dw=4.mat H1_course H2_course H3_course w_dbl_course
-
-load DuffTF_dw=4.mat % Loads the precomputed exact transfer functions with resolution dw = 2 rad/s
+freq_disc = 4 ; % discretization of the frequency axis [rad/s]
+if recomp_TF
+    w_theo = 0:freq_disc:freq_max ; % Discretization of the frequncy axis
+    [H1_course, H2_course, H3_course, w_dbl_course] = solve_analytical_duffing(odePars, w_theo) ; % computes analytical TF
+    % save DuffTF_dw=4.mat H1_course H2_course H3_course w_dbl_course % saves the data
+else
+    load DuffTF_dw=4.mat % Loads the precomputed exact transfer functions with resolution dw = 4 rad/s
+end
 
 % Interpolate to a finer grid (dw=1 rad/s) for plotting:
 [X_int, Y_int, Z_int] = meshgrid(-freq_max:1:freq_max);

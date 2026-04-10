@@ -19,7 +19,7 @@ odePars.c = 2*odePars.xi*sqrt(odePars.k1*odePars.m) ; % damping [Ns/m]
 ry = 3 ; % max lagged sample on output (k-1, ..., k-ry)
 ru = 3 ; % max lagged sample on input  (k-0, ..., k-ru )
 ord = "3" ; % order of the poly-NARX
-numSeg = 3; % number of segments ( >1 )
+numSeg = 10; % number of segments ( >1 )
 lenSeg = 100 ; % number of points in each segment
 fsr = 5000 ; % sampling frequency for ODE
 dtr = 1/fsr ; % reference time step for ODE [s]
@@ -30,14 +30,6 @@ ts = 0:2*max(dts):tmax ; % sampling time axis [s]
 fs = normrnd(0,5,[numel(ts), 1]) ; % input signal [N]
 ur = interp1(ts, fs, tr) ; % Nyquist-proof input
 clear ts fs
-
-
-%------------------------------------- Harmonic Probing Input: -----------------------------------------------------------------
-diag_offset = 1; % diagonal offset 
-dw_res  = 5; % freq-axis discretization
-w_min = 30; % start frequency on the axis
-w_max = 100; % end frequency on the axis
-w1 = w_min:dw_res:floor(w_max/dw_res)*dw_res ; % axis of the LTF, QTF, CTF
 
 % ODE response and force with added noise
 SNRf = 100 ; % signal-to-noise ratio for input

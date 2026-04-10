@@ -43,8 +43,10 @@ for j = 1: numel(w1_ax)
         H1w1 = interp1(w1_ax, H1, w1, "spline", "extrap")  ; % Ensure H1 value is available at w1
         H1w2 = interp1(w1_ax, H1, w2, "spline", "extrap")  ; % Ensure H1 value is available at w2
 
-        [~, t] = find_freq([abs(w1), abs(w2)], dw) ; % find t that gives no leakage in the DFT
-
+        % Esnure the time vector does not cause leakage in the DFT computation
+        dt = (pi)/(2*(sum([abs(w1), abs(w2)]))); % Upper bound computation m*sum(\Omega_p). Line 7. Algorithm 1. (pg. 6)
+        r =  single((2*pi/dw)/dt); % Length of the time-vector (must be an integer). Line 8+9. Algorithm 1. (pg. 6)
+        t = 0:dt:(r-1)*dt ; % Time vector, last element removed for periodicity
 
         [~, R, freq] = compute_residual2(C1, C2, H1w1, H1w2, z1, ry, ru, w1, w2, dts, t) ; % Compute the residual for Point 1
         [~, index] = min(abs(freq - (w1+w2)/(2*pi) )) ; % Identify the correct index (freqeuncy bin)

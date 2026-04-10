@@ -25,7 +25,10 @@ H1_sol = ones( [1, numel(w1_ax)] ).*1e-5 +  1i*ones( [1, numel(w1_ax)] ).*1e-5 ;
 for i=1:1:numel(w1_ax)
     w1 = w1_ax(i) ; % rad/s
 
-    [~, t] = find_freq(5*w1, 1); % Find the length of the signal for the probing. Use 5*w for stability
+    % Esnure the time vector does not cause leakage in the DFT computation (factor 5 introduced)
+    dt = (pi)/(1*(sum(5*w1))); % Upper bound computation m*sum(\Omega_p). Line 7. Algorithm 1. (pg. 6)
+    r =  single((2*pi/1)/dt); % Length of the time-vector (must be an integer). Line 8+9. Algorithm 1. (pg. 6)
+    t = 0:dt:(r-1)*dt ; % Time vector, last element removed for periodicity
 
     [~, R, freq] = compute_residual1(C1, z1,  ry, ru, w1, dts, t) ; % Compute the residual for Point 1. Line 20 (pg. 6)
     [~, index] = min(abs(freq - (w1)/(2*pi) )) ; % Identify the correct index for the optimization

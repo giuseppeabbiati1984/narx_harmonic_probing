@@ -57,10 +57,10 @@ for k = 1 : numel(w1_ax)
 	       continue
 	   end
 
-
-
-
-	  [~, t] = find_freq([abs(w1), abs(w2), abs(w3)], dw) ; % find t that gives no leakage
+	   % Esnure the time vector does not cause leakage in the DFT computation
+	   dt = (pi)/(3*(sum([abs(w1), abs(w2), abs(w3)]))); % Upper bound computation m*sum(\Omega_p). Line 7. Algorithm 1. (pg. 6)
+	   r =  single((2*pi/dw)/dt); % Length of the time-vector (must be an integer). Line 8+9. Algorithm 1. (pg. 6)
+	   t = 0:dt:(r-1)*dt ; % Time vector, last element removed for periodicity
 
 	  [~, R, freq] = compute_residual3(C1, C2, C3, H1w1, H1w2, H1w3,...
 	      H2w1w1, H2w2w2, H2w3w3, H2w1w2, H2w1w3, H2w2w3,...
