@@ -41,3 +41,4 @@ codegen/
 *.prj
 resources/
 /script_narx_gen.m
+/find_freq.m

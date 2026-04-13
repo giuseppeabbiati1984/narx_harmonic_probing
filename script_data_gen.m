@@ -53,3 +53,30 @@ ur_scl = ur/stdF1 ; % Scaled input
 yr_scl = yr/stdY1 ; % Scaled output
 
 save duff_train_data.mat 
+
+return
+%% Synthetich data plot
+PlotFontSize = 22;
+
+figure('Renderer', 'painters', 'Position', [10, 100, 1000, 500]) ;
+
+subplot('Position', [0.15, 0.62, 0.75, 0.32]);
+plot(tr, ur, "r-") ;
+% xlabel('$t$','Interpreter','latex')
+ylabel('$u(t)$','Interpreter','latex')
+set(gca, 'FontSize',  PlotFontSize) ;
+
+
+subplot('Position', [0.15, 0.15, 0.75, 0.32]);
+plot(tr, yr, "b-") ; 
+xlabel('$t$','Interpreter','latex')
+ylabel('$y(t)$','Interpreter','latex')
+set(gca, 'FontSize',  PlotFontSize) ;
+
+
+folder = "C:\Users\AU657332\OneDrive - Aarhus universitet\Giuseppe Abbiatis filer - david_stamenov\dissemination\MethodsX" ;  % your target folder
+filename = strcat("synth_data.eps");  % filename
+fullpath = fullfile(folder, filename);  % create full path
+
+% print(gcf, '-depsc', fullpath);	% save as color EPS
+
