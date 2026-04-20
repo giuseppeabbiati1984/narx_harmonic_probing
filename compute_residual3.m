@@ -46,9 +46,9 @@ y = ...
     H1w1 * exp(1i*w1*(t.' - dts*(0:1:(ry) ))) + ...	% linear w1
     H1w2 * exp(1i*w2*(t.' - dts*(0:1:(ry) ))) + ...	 % linear w2
     H1w3 * exp(1i*w3*(t.' - dts*(0:1:(ry) ))) + ...	 % linear w3
-    H2w1w1 * exp(1i*2*w1*(t.' - dts*(0:1:(ry) )))  + ...	 % quad w12
-    H2w2w2 * exp(1i*2*w2*(t.' - dts*(0:1:(ry) )))  + ... % quad w13
-    H2w3w3 * exp(1i*2*w3*(t.' - dts*(0:1:(ry) )))  + ... % quad w12
+    H2w1w1 * exp(1i*2*w1*(t.' - dts*(0:1:(ry) )))  + ...	 % quad w11
+    H2w2w2 * exp(1i*2*w2*(t.' - dts*(0:1:(ry) )))  + ... % quad w22
+    H2w3w3 * exp(1i*2*w3*(t.' - dts*(0:1:(ry) )))  + ... % quad w33
     (H2w1w2+H2w1w2) * exp(1i*w12*(t.' - dts*(0:1:(ry) )))  + ... % quad w12
     (H2w1w3+H2w1w3) * exp(1i*w13*(t.' - dts*(0:1:(ry) )))  + ... % quad w13
     (H2w2w3+H2w2w3) * exp(1i*w23*(t.' - dts*(0:1:(ry) )))  + ... % quad w12

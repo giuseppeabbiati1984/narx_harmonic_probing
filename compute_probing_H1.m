@@ -21,22 +21,23 @@ z1 = 1; % Point 1 for eval of residual
 z2 = 0; % Point 2 for eval of residual
 
 H1_sol = ones( [1, numel(w1_ax)] ).*1e-5 +  1i*ones( [1, numel(w1_ax)] ).*1e-5 ; % Declare an empty array
+dw = abs(w1_ax(2) - w1_ax(1)) ; % Frequency grid discretization
 
 for i=1:1:numel(w1_ax)
     w1 = w1_ax(i) ; % rad/s
 
     % Esnure the time vector does not cause leakage in the DFT computation (factor 5 introduced)
-    dt = (pi)/(1*(sum(5*w1))); % Upper bound computation m*sum(\Omega_p). Line 7. Algorithm 1. (pg. 6)
-    r =  single((2*pi/1)/dt); % Length of the time-vector (must be an integer). Line 8+9. Algorithm 1. (pg. 6)
+    dt = (pi)/(1*(sum(2*w1))); % Upper bound computation m*sum(\Omega_p). Line 7. Algorithm 1. (pg. 6)
+    r =  single((2*pi/dw)/dt); % Length of the time-vector (must be an integer). Line 8+9. Algorithm 1. (pg. 6)
     t = 0:dt:(r-1)*dt ; % Time vector, last element removed for periodicity
 
-    [~, R, freq] = compute_residual1(C1, z1,  ry, ru, w1, dts, t) ; % Compute the residual for Point 1. Line 20 (pg. 6)
-    [~, index] = min(abs(freq - (w1)/(2*pi) )) ; % Identify the correct index for the optimization
-    delta_1 =  R(index);
+    [~, R1, freq] = compute_residual1(C1, z1,  ry, ru, w1, dts, t) ; % Compute the residual for Point 1. Line 20 (pg. 6)
+    [~, index1] = min(abs(freq - (w1)/(2*pi) )) ; % Identify the correct index for the optimization
+    delta_1 =  R1(index1);
 
-    [~, R, freq] = compute_residual1(C1, z2,  ry, ru, w1, dts, t) ; % Compute the residual for Point 2. Line 19 (pg. 6)
-    [~, index] = min(abs(freq - (w1)/(2*pi) )) ; % Identify the correct index for the optimization
-    delta_0 =  R(index);
+    [~, R0, freq] = compute_residual1(C1, z2,  ry, ru, w1, dts, t) ; % Compute the residual for Point 2. Line 19 (pg. 6)
+    [~, index0] = min(abs(freq - (w1)/(2*pi) )) ; % Identify the correct index for the optimization
+    delta_0 =  R0(index0);
 
     H1_sol(i) =  delta_0/(delta_0 - delta_1); % Equation on Line 21 from Algorithm 1 (pg. 6)
 end
