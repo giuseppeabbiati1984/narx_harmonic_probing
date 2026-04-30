@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "Numerical Harmonic Probing of Polynomial NARX Models"
+authors:
+  - family-names: "Stamenov"
+    given-names: "David"
+  - family-names: "Abbiati"
+    given-names: "Giuseppe"
+version: "1.0.0"
+date-released: "2026-04-30"
+url: "https://github.com/giuseppeabbiati1984/narx_harmonic_probing"
+repository-code: "https://github.com/giuseppeabbiati1984/narx_harmonic_probing"
+keywords:
+  - "NARX"
+  - "harmonic probing"
+  - "numerical harmonic probing"
+  - "Volterra series"
+  - "generalized frequency response functions"
+  - "GFRFs"
+  - "nonlinear system identification"
+  - "MATLAB"
+license: "MIT"
