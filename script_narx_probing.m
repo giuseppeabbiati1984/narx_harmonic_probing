@@ -13,9 +13,9 @@ rng(10, 'twister') ;
 % iv) Compares against the theoretical solutions for the Duffing oscillator
 
 %------------------------------------- Harmonic Probing Input: -----------------------------------------------------------------
-dw_res  = 5; % probing frequency axis discretization
+dw_res  = 2; % probing frequency axis discretization
 w_min = 30; % start frequency on the probing axis
-w_max = 100; % end frequency on the probing axis
+w_max = 120; % end frequency on the probing axis
 diag_offset = 1; % diagonal to plot (for order > 1)  
 w1 = w_min:dw_res:floor(w_max/dw_res)*dw_res ; % frequency axis of the LTF, QTF, CTF
 recomp_TF = 0 ; % switch 0: use precomputed analytical transfer function results. 1: re-compute the results
@@ -89,7 +89,7 @@ end
 
 %% Plot LTF
 close all ;
-PlotFontSize = 27 ;
+PlotFontSize = 22 ;
 NumStd = 3 ; % How many std dev to plot
 Color1 = [.55 .55 .55]; Color2 = [.25 .95 .95]; Color3 = [.05 .05 .05]; color4 = [.25 .25 .25] ; % Define colors
 
@@ -108,7 +108,7 @@ x_plot =[w1, fliplr(w1)];
 
 
 % ########PLOT LTF REAL PART ##################################
-    figure('Renderer', 'painters', 'Position', [10, 100, 800, 900]) ; %#ok<*FGREN>
+    figure('Renderer', 'painters', 'Position', [10, 100, 600, 900]) ; %#ok<*FGREN>
      subplot(2,1,1);  hold on;  box on; set(gca, 'FontSize',  PlotFontSize) ;
 
      f3 = fill(x_plot, real(y_plot3), 1,'facecolor', Color3, 'edgecolor', 'none', 'facealpha', 0.2);
@@ -122,12 +122,14 @@ x_plot =[w1, fliplr(w1)];
      hm = plot(w1, real(H1_mean), 'bx','linewidth', 1.5) ;
      ylim(1.2*[y_min, y_max]); xlim([0, w_dbl_exact(end)]);
 
-     title({'Linear'},'Interpreter','latex',"FontSize", PlotFontSize) 
+    
      xlabel('$\omega_1$ [rad/s]','Interpreter','latex')
      ylabel('$\Re(H^{(1)})$','Interpreter','latex')
 
      legend([h2, hm, f2, f3], { "Theoretical", 'Probing Mean' , "2 std. dev", "3 std. dev"}, 'location', 'northeast', 'fontsize', PlotFontSize-12) ;
+     % legend([h2, hm], { "Theoretical", 'Probing Mean' }, 'location', 'northeast', 'fontsize', PlotFontSize-12) ;
      set(gca, 'FontSize',  PlotFontSize) ;
+      title({'Linear';" "},'Interpreter','latex',"FontSize", PlotFontSize-5) 
 
      % ########PLOT LTF IMAGINARY PART ##################################
      subplot(2,1,2); hold on; box on; set(gca,'FontSize',  PlotFontSize)
@@ -146,6 +148,11 @@ x_plot =[w1, fliplr(w1)];
      ylabel('$\Im(H^{(1)})$','Interpreter','latex')
      set(gca, 'FontSize',  PlotFontSize) ;
 
+     folder = "C:\Users\AU657332\OneDrive - Aarhus universitet\Giuseppe Abbiatis filer - david_stamenov\dissemination\MethodsX" ;  % your target folder
+     filename = strcat("H1.eps");  % filename
+     fullpath = fullfile(folder, filename);  % create full path
+
+     % print(gcf, '-depsc', fullpath);	% save as color EPS
 %% Plot Diagonal of QTF
 
 H2_sol = zeros(size(Y, 2),numel(w1)-diag_offset) ;
@@ -175,7 +182,7 @@ y_plot2=[H2_2std(1, :), fliplr(H2_2std(2, :))] ;
 y_plot3=[H2_3std(1, :), fliplr(H2_3std(2, :))] ;
 
 % ########PLOT QTF REAL PART ##################################
-    figure('Renderer', 'painters', 'Position', [600, 100, 800, 900]);
+    figure('Renderer', 'painters', 'Position', [600, 100, 600, 900]);
      subplot(2,1,1);  hold on;  box on; set(gca, 'FontSize',  PlotFontSize);
 
      f3 = fill(x_plot, real(y_plot3), 1,'facecolor', Color3, 'edgecolor', 'none', 'facealpha', 0.2);
@@ -191,12 +198,14 @@ y_plot3=[H2_3std(1, :), fliplr(H2_3std(2, :))] ;
      ylim(1.2*[y_min, y_max]); xlim([0, w_dbl_exact(end)]);
      % title({[strcat(' Freq. $\Delta \omega =$', num2str(dw), ' rad/s, ')]; ...
      % [strcat(' $\omega_n =$', num2str(round(wn)), ' rad/s')]}, 'Interpreter','latex')
-     title({"Quadratic"; ...
-          [strcat("$ |\omega_2 - \omega_1| =", num2str(dw_res*diag_offset) ,"~r/s$")]}, 'Interpreter','latex',"FontSize", PlotFontSize) 
      xlabel('$\omega_1$ [rad/s]','Interpreter','latex')
      ylabel('$\Re(H^{(2)})$','Interpreter','latex')
      legend([h2, hm, f2, f3], { "Theoretical", 'Probing Mean', "2 std. dev", "3 std. dev"}, 'location', 'northeast', 'fontsize', PlotFontSize-12) ;
+     % legend([h2, hm], { "Theoretical", 'Probing Mean'}, 'location', 'northeast', 'fontsize', PlotFontSize-12) ;
      set(gca, 'FontSize',  PlotFontSize) ;
+     title({"Quadratic"; ...
+          [strcat("$ |\omega_2 - \omega_1| =", num2str(dw_res*diag_offset) ,"~r/s$")]}, 'Interpreter','latex',"FontSize", PlotFontSize-5) 
+     
 
      % ########PLOT QTF IMAGINARY PART ##################################
      subplot(2,1,2); hold on; box on; set(gca,'FontSize',  PlotFontSize)
@@ -216,7 +225,12 @@ y_plot3=[H2_3std(1, :), fliplr(H2_3std(2, :))] ;
      ylabel('$\Im(H^{(2)})$','Interpreter','latex')
      set(gca, 'FontSize',  PlotFontSize) ;
      % legend([h1, h1_qtf, f_qtf], {'Harmonic Probing', "Theoretical", strcat(num2str(NumStd), ' std. dev') }, 'location', 'northeast',"FontSize",PlotFontSize-7) ;
-     
+
+     folder = "C:\Users\AU657332\OneDrive - Aarhus universitet\Giuseppe Abbiatis filer - david_stamenov\dissemination\MethodsX" ;  % your target folder
+     filename = strcat("H2.eps");  % filename
+     fullpath = fullfile(folder, filename);  % create full path
+
+     % print(gcf, '-depsc', fullpath);	% save as color EPS
 %% Plot Diagonal of CTF
 ax1 = w1(2):dw_res:w1(end)-3*dw_res*diag_offset ; % comparison axis 1
 ax2 = ax1+diag_offset*dw_res ; % comparison axis 2
@@ -263,7 +277,7 @@ y_plot2=[H3_2std(1, :), fliplr(H3_2std(2, :))] ;
 y_plot3=[H3_3std(1, :), fliplr(H3_3std(2, :))] ;
 
 % ########PLOT CTF REAL PART ##################################
-    figure('Renderer', 'painters', 'Position', [1200, 100, 800, 900]);
+    figure('Renderer', 'painters', 'Position', [1200, 100, 600, 900]);
      subplot(2,1,1);  hold on;  box on; set(gca, 'FontSize',  PlotFontSize);
 
      f3 = fill(x_plot, real(y_plot3), 1,'facecolor', Color3, 'edgecolor', 'none', 'facealpha', 0.2);
@@ -278,13 +292,15 @@ y_plot3=[H3_3std(1, :), fliplr(H3_3std(2, :))] ;
 
      ylim(1.2*[y_min, y_max]); xlim([0, w_dbl_exact(end)]);
 
-     title({'Cubic' ...
-         [strcat("$ |\omega_2 - \omega_1| = $", num2str(diag_offset*dw_res), " rad/s ")]...
-         [strcat("$ |\omega_3 - \omega_2| = $", num2str(diag_offset*dw_res), " rad/s ")]}, 'Interpreter','latex',"FontSize", PlotFontSize) 
+    
      xlabel('$\omega_1$ [rad/s]','Interpreter','latex')
      ylabel('$\Re(H^{(3)})$','Interpreter','latex')
     legend([h2, hm, f2, f3], { "Theoretical", 'Probing Mean',  "2 std. dev", "3 std. dev"}, 'location', 'northeast', 'fontsize', PlotFontSize-12) ;
+    % legend([h2, hm], { "Theoretical", 'Probing Mean'}, 'location', 'northeast', 'fontsize', PlotFontSize-12) ;
      set(gca, 'FontSize',  PlotFontSize) ;
+      title({'Cubic' ...
+         [strcat("$ |\omega_3 - \omega_2|= |\omega_2 - \omega_1| = $", num2str(diag_offset*dw_res), " rad/s ")]...
+	}, 'Interpreter','latex',"FontSize", PlotFontSize-5) 
 
   % ########PLOT CTF IMAGINARY PART ##################################
      subplot(2,1,2); hold on; box on; set(gca,'FontSize',  PlotFontSize)
@@ -303,3 +319,9 @@ y_plot3=[H3_3std(1, :), fliplr(H3_3std(2, :))] ;
      xlabel('$\omega_1$ [rad/s]','Interpreter','latex')
      ylabel('$\Im(H^{(3)})$','Interpreter','latex')
      set(gca, 'FontSize',  PlotFontSize) ;
+
+     folder = "C:\Users\AU657332\OneDrive - Aarhus universitet\Giuseppe Abbiatis filer - david_stamenov\dissemination\MethodsX" ;  % your target folder
+     filename = strcat("H3.eps");  % filename
+     fullpath = fullfile(folder, filename);  % create full path
+
+     % print(gcf, '-depsc', fullpath);	% save as color EPS
