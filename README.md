@@ -26,14 +26,14 @@ The code demonstrates the following workflow:
 
 ## Repository Structure
 
-├── script_data_gen.m
-├── script_harmonic_probing.m
-├── compute_probing_H1.m
-├── compute_probing_H2.m
-├── compute_probing_H3.m
-├── compute_freq_check.m
-├── find_freq.m
-├── README.md
-└── data/
-    ├── duff_train_data.mat
-    └── DuffTF_dw=4.mat
+├── script_data_gen.m                                                                                                                                                                                                                                          
+├── script_harmonic_probing.m                                                                                    
+├── compute_probing_H1.m                                                                                                                                                                                                                                          
+├── compute_probing_H2.m                                                                                                                                                                                                                                          
+├── compute_probing_H3.m                                                                                                                                                                                                                                          
+├── compute_freq_check.m                                                                                                                                                                                                                                          
+├── find_freq.m                                                                                                                                                                                                                                          
+├── README.md                                                                                                                                                                                                                                          
+└── data/                                                                                                                                                                                                                                          
+    ├── duff_train_data.mat                                                                                                                                                                                                                                          
+    └── DuffTF_dw=4.mat                                                                                                                                                                                                                                          
