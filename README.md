@@ -7,6 +7,8 @@ The implementation follows the numerical harmonic probing framework described in
 > Stamenov et al. (2025), *Numerical estimation of generalized frequency response functions from time series data using NARX*, Mechanical Systems and Signal Processing.  
 > https://doi.org/10.1016/j.ymssp.2025.113278
 
+This project is licensed under the terms of the MIT license.
+
 ## Overview
 
 The code demonstrates the following workflow:
