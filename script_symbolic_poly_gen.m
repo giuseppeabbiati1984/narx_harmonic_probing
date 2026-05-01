@@ -1,11 +1,13 @@
 % (D. Stamenov, Aug 30, 2023) This script produces the symbolic functions
-% needed for the poly NARX and saves them to a file.
-clear;  clc; %close all;
+% This script generates the needed files for performing the LASSO regression. 
+% It is directly called from "train_NARX.m". Alternatively it can be run independently by uncommenting Ord, ry, ru
+
+% clear;  clc; %close all;
 
 %########### Develop Symbolic Functions ################
-Ord = "3" ;
-ry = 3 ;
-ru = 3 ; % the additional lag is for the present term of the input.
+% Ord = "3" ;
+% ry = 3 ;
+% ru = 3 ; % the additional lag is for the present term of the input.
 r = ru + ry + 1; % total number of lags
 
 % Input

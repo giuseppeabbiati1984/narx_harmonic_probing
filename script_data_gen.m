@@ -16,20 +16,14 @@ odePars.xi = 0.10 ; % damping ratio [  ]
 odePars.c = 2*odePars.xi*sqrt(odePars.k1*odePars.m) ; % damping [Ns/m]
 
 % Time Series Input:
-ry = 3 ; % max lagged sample on output (k-1, ..., k-ry)
-ru = 3 ; % max lagged sample on input  (k-0, ..., k-ru )
-ord = "3" ; % order of the poly-NARX
-numSeg = 2; % number of segments ( >1 )
-lenSeg = 100 ; % number of points in each segment
 fsr = 5000 ; % sampling frequency for ODE
 dtr = 1/fsr ; % reference time step for ODE [s]
-dts = 0.005236 ; % subsampling time step(s) for NARX [s]   opt = 5.236e-3
-tmax = lenSeg*numSeg*dts;
+dts = 0.005 ; % subsampled time axis [s]  
+tmax = 10; % time length [s];
 tr = 0:dtr:tmax ; % high frequency time axis [s]
 ts = 0:2*max(dts):tmax ; % sampling time axis [s]
-fs = normrnd(0,5,[numel(ts), 1]) ; % input signal [N]
-ur = interp1(ts, fs, tr) ; % Nyquist-proof input
-clear ts fs
+us = normrnd(0, 5, [numel(ts), 1]) ; % input signal [N]
+ur = interp1(ts, us, tr) ; % Nyquist-proof input
 
 % ODE response and force with added noise
 SNRf = 100 ; % signal-to-noise ratio for input
@@ -38,21 +32,11 @@ odeHandle = @(t, y) compute_SSduffing(t, y, odePars, tr, ur) ; % state-space def
 														
 [yr, ur] = compute_ODE(odeHandle, tr ,ur, SNRf, SNRy) ; % solving the OED
 
-%Compute scaling factors (input and output)
-stdU = std(ur) ; % input std. dev. for scaling
-stdY = std(yr) ; % output std. dev. for scaling
+tr = tr(:);
+ur = ur(:);
+yr = yr(:);
 
-%Compute transfer function scaling factors (nonlinear scaling)
-scale0 = stdY/stdU^0 ; 
-scale1 = stdY/stdU^1 ; % LTF Scale
-scale2 = stdY/stdU^2 ; % QTF Scale
-scale3 = stdY/stdU^3 ; % CTF Scale
-
-% Scale the signals by the std. dev.
-ur_scl = ur/stdU ; % Scaled input 
-yr_scl = yr/stdY ; % Scaled output
-
-save duff_train_data.mat 
+save duff_train_data.mat tr ur yr
 
 return
 %% Synthetich data plot

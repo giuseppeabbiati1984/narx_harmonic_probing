@@ -12,15 +12,45 @@ rng(10, 'twister') ;
 % iii) Computes LTF, QTF, and CTF using the numerical harmonic probing algorithm
 % iv) Compares against the theoretical solutions for the Duffing oscillator
 
+% Load input output data
+load duff_train_data.mat % load the syntehtic data generated from "script_data_gen"
+
+%-----------------NARX Settings---------------------------------------------------------------------------------------------------
+ry = 3 ; % max lagged sample on output (k-1, ..., k-ry)
+ru = 3 ; % max lagged sample on input  (k-0, ..., k-ru )
+ord = "3" ; % order of the poly-NARX
+numSeg = 10; % number of segments ( >1 )
+lenSeg = 100 ; % number of points in each segment
+dts = 0.005236 ; % subsampling time step(s) for NARX [s]  
+
+
 %------------------------------------- Harmonic Probing Input: -----------------------------------------------------------------
-dw_res  = 2; % probing frequency axis discretization
+dw_res  = 5; % probing frequency axis discretization
 w_min = 30; % start frequency on the probing axis
 w_max = 120; % end frequency on the probing axis
 diag_offset = 1; % diagonal to plot (for order > 1)  
 w1 = w_min:dw_res:floor(w_max/dw_res)*dw_res ; % frequency axis of the LTF, QTF, CTF
 recomp_TF = 0 ; % switch 0: use precomputed analytical transfer function results. 1: re-compute the results
 
-load duff_train_data.mat % load the syntehtic data generated from "script_data_gen"
+
+%--------------------Data preparation (scale & segment)-----------------------------------------------------------------------
+
+%Compute scaling factors (input and output):
+stdU = std(ur) ; % input std. dev. for scaling
+stdY = std(yr) ; % output std. dev. for scaling
+
+
+%Compute transfer function scaling factors (nonlinear scaling)
+scale0 = stdY/stdU^0 ; 
+scale1 = stdY/stdU^1 ; % LTF Scale
+scale2 = stdY/stdU^2 ; % QTF Scale
+scale3 = stdY/stdU^3 ; % CTF Scale
+
+% Scale the signals by the std. dev.
+ur_scl = ur/stdU ; % Scaled input 
+yr_scl = yr/stdY ; % Scaled output
+
+
 
 % Segment the data into arrays sutiable for training the NARX model
 [Xy, Xu, Y, tr_ss, zeta_ss, yr_ss] = pack_data(tr, ur_scl, yr_scl, dts, numSeg, lenSeg, ru, ry) ;
