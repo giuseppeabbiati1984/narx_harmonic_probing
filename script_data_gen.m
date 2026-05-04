@@ -36,7 +36,8 @@ tr = tr(:);
 ur = ur(:);
 yr = yr(:);
 
-save duff_train_data.mat tr ur yr
+save duff_input_data.mat tr ur
+save duff_output_data.mat tr yr
 
 return
 %% Synthetich data plot

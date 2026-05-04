@@ -13,13 +13,14 @@ rng(10, 'twister') ;
 % iv) Compares against the theoretical solutions for the Duffing oscillator
 
 % Load input output data
-load duff_train_data.mat % load the syntehtic data generated from "script_data_gen"
+load duff_input_data.mat % load the input data generated from "script_data_gen"
+load duff_output_data.mat % load the output data generated from "script_data_gen"
 
 %-----------------NARX Settings---------------------------------------------------------------------------------------------------
 ry = 3 ; % max lagged sample on output (k-1, ..., k-ry)
 ru = 3 ; % max lagged sample on input  (k-0, ..., k-ru )
 ord = "3" ; % order of the poly-NARX
-numSeg = 10; % number of segments ( >1 )
+numSeg = 3; % number of segments ( >1 )
 lenSeg = 100 ; % number of points in each segment
 dts = 0.005236 ; % subsampling time step(s) for NARX [s]  
 
@@ -33,12 +34,11 @@ w1 = w_min:dw_res:floor(w_max/dw_res)*dw_res ; % frequency axis of the LTF, QTF,
 recomp_TF = 0 ; % switch 0: use precomputed analytical transfer function results. 1: re-compute the results
 
 
-%--------------------Data preparation (scale & segment)-----------------------------------------------------------------------
+%% --------------------Data preparation + NARX fitting--------------------------------------------------
 
 %Compute scaling factors (input and output):
 stdU = std(ur) ; % input std. dev. for scaling
 stdY = std(yr) ; % output std. dev. for scaling
-
 
 %Compute transfer function scaling factors (nonlinear scaling)
 scale0 = stdY/stdU^0 ; 
@@ -46,14 +46,8 @@ scale1 = stdY/stdU^1 ; % LTF Scale
 scale2 = stdY/stdU^2 ; % QTF Scale
 scale3 = stdY/stdU^3 ; % CTF Scale
 
-% Scale the signals by the std. dev.
-ur_scl = ur/stdU ; % Scaled input 
-yr_scl = yr/stdY ; % Scaled output
-
-
-
 % Segment the data into arrays sutiable for training the NARX model
-[Xy, Xu, Y, tr_ss, zeta_ss, yr_ss] = pack_data(tr, ur_scl, yr_scl, dts, numSeg, lenSeg, ru, ry) ;
+[Xy, Xu, Y, tr_ss, zeta_ss, yr_ss] = pack_data(tr, ur, yr, dts, numSeg, lenSeg, ru, ry) ;
 
 % Training of Poly-NARX:
 NARX = cell(size(Xy));
@@ -61,27 +55,8 @@ for i = 1:numel(Xy)
     %Train a NARX model for each of segment. NARX one-step ahead is loaded based on the input data size:
     NARX{i} = train_NARX(Xy{i}, Xu{i}, Y{i}, ord); 
 end
-%% Compute/Load theoretical transfer functions
 
-% Block to compute analytical transfer functions or load pre-computed data:
-freq_max = 200 ; %max limit of the frequency axis
-freq_disc = 4 ; % discretization of the frequency axis [rad/s]
-if recomp_TF
-    w_theo = 0:freq_disc:freq_max ; % Discretization of the frequncy axis
-    [H1_course, H2_course, H3_course, w_dbl_course] = solve_analytical_duffing(odePars, w_theo) ; % computes analytical TF
-    % save DuffTF_dw=4.mat H1_course H2_course H3_course w_dbl_course % saves the data
-else
-    load DuffTF_dw=4.mat % Loads the precomputed exact transfer functions with resolution dw = 4 rad/s
-end
-
-% Interpolate to a finer grid (dw=1 rad/s) for plotting:
-[X_int, Y_int, Z_int] = meshgrid(-freq_max:1:freq_max);
-H1_exact = interp1(w_dbl_course, H1_course, X_int(1,:,1), "spline");
-H2_exact = interp2(w_dbl_course, w_dbl_course, H2_course, X_int(:,:,1), Y_int(:,:,1), "spline");
-H3_exact = interp3(w_dbl_course, w_dbl_course, w_dbl_course,H3_course, X_int,  Y_int, Z_int, "spline");
-w_dbl_exact = -freq_max:1:freq_max; %frequency axis used for comparison in the plots
-
-%% ############### Probing #########################
+%% -------------------------- Numerical Harmonic Probing -------------------------------------------------
 
 % Allocating memory for arrays:
 H1_scl = zeros(numSeg, numel(w1)) ; %vector for the SCALED output of the probing
@@ -117,7 +92,29 @@ disp(strcat('HP of segment : ', num2str(i), '/', num2str(size(Y, 2)))) ;
 
 end
 
-%% Plot LTF
+%% ----------------------------Compute/Load theoretical transfer functions------------------------------
+
+% Block to compute analytical transfer functions or load pre-computed data:
+freq_max = 200 ; %max limit of the frequency axis
+freq_disc = 4 ; % discretization of the frequency axis [rad/s]
+if recomp_TF
+    w_theo = 0:freq_disc:freq_max ; % Discretization of the frequncy axis
+    [H1_course, H2_course, H3_course, w_dbl_course] = solve_analytical_duffing(odePars, w_theo) ; % computes analytical TF
+    % save DuffTF_dw=4.mat H1_course H2_course H3_course w_dbl_course % saves the data
+else
+    load DuffTF_dw=4.mat % Loads the precomputed exact transfer functions with resolution dw = 4 rad/s
+end
+
+% Interpolate to a finer grid (dw=1 rad/s) for plotting:
+[X_int, Y_int, Z_int] = meshgrid(-freq_max:1:freq_max);
+H1_exact = interp1(w_dbl_course, H1_course, X_int(1,:,1), "spline");
+H2_exact = interp2(w_dbl_course, w_dbl_course, H2_course, X_int(:,:,1), Y_int(:,:,1), "spline");
+H3_exact = interp3(w_dbl_course, w_dbl_course, w_dbl_course,H3_course, X_int,  Y_int, Z_int, "spline");
+w_dbl_exact = -freq_max:1:freq_max; %frequency axis used for comparison in the plots
+
+
+
+%% -------------------------------------------------Plot LTF-------------------------------------------------
 close all ;
 PlotFontSize = 22 ;
 NumStd = 3 ; % How many std dev to plot
@@ -183,7 +180,7 @@ x_plot =[w1, fliplr(w1)];
      fullpath = fullfile(folder, filename);  % create full path
 
      % print(gcf, '-depsc', fullpath);	% save as color EPS
-%% Plot Diagonal of QTF
+%% ------------------------------------Plot Diagonal of QTF-------------------------------------------------
 
 H2_sol = zeros(size(Y, 2),numel(w1)-diag_offset) ;
 H2_exact_diag = zeros(1,numel(w_dbl_exact)) ;
@@ -261,7 +258,7 @@ y_plot3=[H2_3std(1, :), fliplr(H2_3std(2, :))] ;
      fullpath = fullfile(folder, filename);  % create full path
 
      % print(gcf, '-depsc', fullpath);	% save as color EPS
-%% Plot Diagonal of CTF
+%% ----------------------------------- Plot Diagonal of CTF-------------------------------------------------
 ax1 = w1(2):dw_res:w1(end)-3*dw_res*diag_offset ; % comparison axis 1
 ax2 = ax1+diag_offset*dw_res ; % comparison axis 2
 ax3 = ax2+diag_offset*dw_res  ; % comparison axis 3
