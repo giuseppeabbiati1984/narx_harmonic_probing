@@ -7,30 +7,31 @@ close all; clear; clc;
 rng(10, 'twister') ;
 
 % The following code illustrates:
-% i) Loads synthetic data generated from "script_data_gen"
+% i) Loads synthetic data (the default data is generated from "script_data_gen")
 % ii) Segments and trains the polynomial-NARX on input/output data of a Duffing oscillator
 % iii) Computes LTF, QTF, and CTF using the numerical harmonic probing algorithm
 % iv) Compares against the theoretical solutions for the Duffing oscillator
 
-% Load input output data
+
+%% #####################USER INPUT##########################
+% -----------------Load input output data----------------------------------------------------------------------------
 load duff_input_data.mat % load the input data generated from "script_data_gen"
 load duff_output_data.mat % load the output data generated from "script_data_gen"
 
 %-----------------NARX Settings---------------------------------------------------------------------------------------------------
-ry = 3 ; % max lagged sample on output (k-1, ..., k-ry)
-ru = 3 ; % max lagged sample on input  (k-0, ..., k-ru )
+ry = 3 ; % max lagged samples on output (k-1, ..., k-ry)
+ru = 3 ; % max lagged samples on input  (k-0, ..., k-ru )
 ord = "3" ; % order of the poly-NARX
-numSeg = 3; % number of segments ( >1 )
+numSeg = 10; % number of segments ( >1 )
 lenSeg = 100 ; % number of points in each segment
-dts = 0.005236 ; % subsampling time step(s) for NARX [s]  
-
+dts = 0.005 ; % subsampling time step(s) for NARX [s]  
 
 %------------------------------------- Harmonic Probing Input: -----------------------------------------------------------------
-dw_res  = 5; % probing frequency axis discretization
+dw_res  = 5; % probing frequency-axis discretization
 w_min = 30; % start frequency on the probing axis
 w_max = 120; % end frequency on the probing axis
 diag_offset = 1; % diagonal to plot (for order > 1)  
-w1 = w_min:dw_res:floor(w_max/dw_res)*dw_res ; % frequency axis of the LTF, QTF, CTF
+w1 = w_min:dw_res:floor(w_max/dw_res)*dw_res ; % frequency axis of the H1, H2, H3
 recomp_TF = 0 ; % switch 0: use precomputed analytical transfer function results. 1: re-compute the results
 
 
@@ -194,8 +195,8 @@ diag_offset_exact = diag_offset*(dw_res/(w_dbl_exact(2)-w_dbl_exact(1))) ;
 H2_exact_diag(1:end-diag_offset_exact)  = diag(H2_exact, diag_offset_exact) ;
 
 
-y_max = max([imag(H2_exact_diag),real(H2_exact_diag)], [], 'all');
-y_min  = min([imag(H2_exact_diag),real(H2_exact_diag)], [], 'all');           
+y_max = max([imag(H2_exact_diag), real(H2_exact_diag)], [], 'all');
+y_min  = min([imag(H2_exact_diag), real(H2_exact_diag)], [], 'all');           
 x_plot =[w1(1:end-diag_offset), fliplr(w1(1:end-diag_offset))];
 
 H2_mean = mean(H2_sol, 1) ;
