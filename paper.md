@@ -155,7 +155,7 @@ For a quick reference, the following citation commands can be used:
 # Figures
 
 Figures can be included like this:
-![Caption for example figure.\label{fig:example}](figure.png)
+![Workflow from measured input–output data of a nonlinear system to its frequency-domain representation. The process includes data preparation, model fitting, numerical harmonic probing, and visualization of the resulting GFRFs.\label{fig:method_sequence}](Figures/method_sequence.png.png)
 and referenced from text using \autoref{fig:example}.
 
 Figure sizes can be customized by adding an optional second parameter:
