@@ -124,12 +124,13 @@ Because the probing is performed numerically and recursively, the framework is a
 # Mathematics
 
 The core functionality of the software is to identify GFRFs from time-domain input-output data. The method assumes that no explicit physics-based representation, such as an equation of motion, is available for the underlying system. Consequently, the system dynamics are first approximated using a data-driven input–output model, which provides the basis for the subsequent extraction of GFRFs. The model prescribed in this software is a polynomial NARX extended to 3-rd order with the following form,
+```math
 \begin{gather}
 %y\left(k\right) = 
 \nonumber F\left( \mathbf{x}\left(k\right) \right) = \sum_{j_1 = 1}^{r} {C}^{(1)}_{j_1} {x}_{j_1}\left(k\right) + \sum_{j_1 = 1}^{r}  \sum_{j_2 = j_1}^{r} {C}^{(2)}_{j_1, j_2} {x}_{j_1}\left(k\right) {x}_{j_2}\left(k\right) + \\\sum_{j_1 = 1}^{r}  \sum_{j_2 = j_1}^{r}  \sum_{j_3 = j_2}^{r} {C}^{(3)}_{j_1,j_2,j_3} {x}_{j_1}\left(k\right) {x}_{j_2}\left(k\right) {x}_{j_3}\left(k\right)
  \label{eq:NARX_n}
 \end{gather}
-%
+```
 with,
 \begin{equation}
     \mathbf{x}(k) =
