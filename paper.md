@@ -31,7 +31,6 @@ affiliations:
    ror: https://ror.org/05xg72x27
 date: 22 May 2026
 bibliography: paper.bib
-
 ---
 
 # Summary
@@ -44,6 +43,8 @@ Engineering systems are often approximated by linear models, which can provide a
 
 Since linear models do not predict intermodulated frequency components, they are insufficient for analyzing the above-mentioned natural phenomena. As a result, engineers and scientists have been focused on developing and improving methods for analyzing nonlinear systems.
 
+# State of the field      
+
 An important nonlinear system identification approach relies on the functional series of Volterra and Wiener [@billings_identification_1980, @schetzen_1980_volterra]. The theoretical basis for these methods was founded by the pioneering works of Volterra, who introduced the theory of analytical functions [@volterra_sopra_1887] and later Frechet, who used it to represent continuous nonlinear systems [@frechet_sur_1910]. The early efforts of identifying nonlinear models, notably the works of Wiener, Bose, and Barrett [@wiener_nonlinear_1958, @bose_theory_1956, @barrett_hermite_1964], revolved around a direct estimation of the Volterra kernels, also referred to as generalized frequency response functions (GFRFs), from measured data. However, estimating GFRFs directly from raw data requires a large number of identified parameters, namely kernel points, to adequately represent the Volterra kernels, and consequently demands large amounts of input–output measurement data.
 
 A practical remedy to this is to identify the Volterra kernels indirectly by applying \emph{harmonic probing} [@bedrosian_output_1971] to data-driven mathematical input–output models. In this way, the kernels are not identified pointwise, but are instead characterized through a comparatively small set of trained model coefficients. Among the most widely used model classes for this purpose is the NARMAX model (nonlinear autoregressive moving average model with exogenous inputs) [@Billings_1985_partI, @Billings_1985_partII, @billings_nonlinear_2013], together with the frequently adopted simpler NARX model [@chen_non-linear_1990], in which the stochastic component is represented as additive noise acting only at the system output. 
@@ -52,9 +53,52 @@ The harmonic probing method is traditionally carried out either through manual d
 
 The software enables efficient analysis of complex nonlinear systems for which developing an explicit physical model is impractical, but representative input–output data can be measured. The user provides measured input and output data, defines the NARX model settings, the operational frequency grid, and the software performs the complete workflow from data preparation to model fitting, numerical probing, and visualization of the resulting GFRFs. A preliminary implementation of the software has been applied and experimentally validated for the identification of nonlinear hydrodynamic loading models [@stamenov_comparison_2025].
 
-# State of the field                                                                                                                  
-
 # Software design
+
+## Software functionality
+
+The core functionality of the software is to identify GFRFs from time-domain input-output data. The method assumes that no explicit physics-based representation, such as an equation of motion, is available for the underlying system. Consequently, the system dynamics are first approximated using a data-driven input–output model, which provides the basis for the subsequent extraction of GFRFs. The model prescribed in this software is a polynomial NARX extended to 3-rd order with the following form,
+
+$$
+\begin{aligned}
+F\left(\mathbf{x}(k)\right)
+&= \sum_{j_1=1}^{r} C^{(1)}_{j_1} x_{j_1}(k) \\
+&\quad + \sum_{j_1=1}^{r}\sum_{j_2=j_1}^{r}
+C^{(2)}_{j_1,j_2} x_{j_1}(k)x_{j_2}(k) \\
+&\quad + \sum_{j_1=1}^{r}\sum_{j_2=j_1}^{r}\sum_{j_3=j_2}^{r}
+C^{(3)}_{j_1,j_2,j_3} x_{j_1}(k)x_{j_2}(k)x_{j_3}(k).
+\end{aligned}
+$$
+
+with,
+
+$$
+\mathbf{x}(k) = \big[ y(k-1), \dots, y(k-r_y),\, u(k), \dots, u(k-r_u)\big],
+$$
+
+where $r=r_y+r_u+1$, and $C^{(1)},C^{(2)},C^{(3)}$ are arrays of training coefficients identified from data. The coefficients of the NARX model do not hold any tangible physical meaning which makes the model difficult to inspect. The Volterra series is an alternative and generic representation of nonlinear input-output models. The frequency-domain Volterra series response up to third order takes the following form,
+
+$$
+    Y(\omega) = Y^{(1)}(\omega) + Y^{(2)}(\omega) + Y^{(3)}(\omega)
+$$
+
+with,
+
+$$
+    Y^{(1)}(\omega) = \int_{-\infty}^{+\infty}\delta(\omega-\omega_1)H^{(1)}(\omega_1) U(\omega_1) \mathrm{d}\omega_1
+$$
+
+$$
+    Y^{(2)}(\omega) = \frac{1}{2\pi} \int_{- \infty}^{+ \infty} \int_{- \infty}^{+ \infty} \delta(\omega - \omega_1 - \omega_2)H^{(2)}(\omega_1,\omega_2)U(\omega_1)U(\omega_2)\mathrm{d}\omega_1\mathrm{d}\omega_2
+$$
+
+$$
+    Y^{(3)}(\omega) = \frac{1}{(2\pi)^{2}} \int_{- \infty}^{+ \infty} \int_{- \infty}^{+ \infty} \int_{- \infty}^{+ \infty} \delta(\omega - \omega_1 - \omega_2-\omega_3)H^{(3)}(\omega_1, \omega_2, \omega_3) U(\omega_1)U(\omega_2)U(\omega_3)   \mathrm{d}\omega_1 \mathrm{d}\omega_2 \mathrm{d}\omega_3
+$$
+
+where $H^{(1)}, H^{(2)}$ and $H^{(3)}$ are the linear, quadratic, and cubic GFRFs to be identified. Both the NARX and the Volterra representation express the same input-output relationship and as such are equivalent. In that regard, the two models formulate a residual whose value is minimized. Since the residual is linear in the GFRFs, the minimization admits a closed-form solution as follows. For two trial values for the $n$-th GFRF of interest, $H_0^{(n)}(\Omega_1,\cdots,\Omega_n)=0$ and $H_1^{(n)}(\Omega_1,\cdots,\Omega_n)=1$ time-domain residual equations are computed,
+where $H^{(1)}, H^{(2)}$ and $H^{(3)}$ are the linear, quadratic, and cubic GFRFs to be identified. Both the NARX and the Volterra representation express the same input-output relationship and as such are equivalent. Consequently, the GFRFs in Eq.~ The present software computes the GFRFs based on input-output data, $u(t)$ and $y(t)$, provided by the user. The technical details of this computation are presented in the theoretical basis for this software published in [@stamenov_numerical_2025].
+
 
 ## Software architecture
 The software is a MATLAB implementation for estimating generalized frequency response functions from time-series data using the numerical harmonic probing framework described in [@stamenov_numerical_2025]. The software is organized as sequential blocks starting from measured input-output data and ending with estimated GFRFs. [Figure 1](#fig-method-sequence) shows the sequence of operations starting from a nonlinear system of interest and concluding with the GFRFs.
@@ -88,39 +132,7 @@ The numerical probing workflow enables the identified model to be inspected thro
 
 Because the probing is performed numerically and recursively, the framework is also well suited for parallel computing and future extension to higher-order or multi-scale systems. This is particularly important for the system identification community, where there is a growing need for tools that can handle complex nonlinear dynamics while remaining computationally tractable and sufficiently transparent for scientific analysis. Overall, the software contributes a practical and scalable pathway for transforming measured input-output data into physically interpretable nonlinear frequency-domain models.
 
-# Mathematics
 
-The core functionality of the software is to identify GFRFs from time-domain input-output data. The method assumes that no explicit physics-based representation, such as an equation of motion, is available for the underlying system. Consequently, the system dynamics are first approximated using a data-driven input–output model, which provides the basis for the subsequent extraction of GFRFs. The model prescribed in this software is a polynomial NARX extended to 3-rd order with the following form,
-$$
-\begin{aligned}
-F\left(\mathbf{x}(k)\right)
-&= \sum_{j_1=1}^{r} C^{(1)}_{j_1} x_{j_1}(k) \\
-&\quad + \sum_{j_1=1}^{r}\sum_{j_2=j_1}^{r}
-C^{(2)}_{j_1,j_2} x_{j_1}(k)x_{j_2}(k) \\
-&\quad + \sum_{j_1=1}^{r}\sum_{j_2=j_1}^{r}\sum_{j_3=j_2}^{r}
-C^{(3)}_{j_1,j_2,j_3} x_{j_1}(k)x_{j_2}(k)x_{j_3}(k).
-\end{aligned}
-$$
-with,
-$$
-\mathbf{x}(k) = \big[ y(k-1), \dots, y(k-r_y),\, u(k), \dots, u(k-r_u)\big],
-$$
-where $r=r_y+r_u+1$, and $C^{(1)},C^{(2)},C^{(3)}$ are arrays of training coefficients identified from data. The coefficients of the NARX model do not hold any tangible physical meaning which makes the model difficult to inspect. The Volterra series is an alternative and generic representation of nonlinear input-output models. The frequency-domain Volterra series response up to third order takes the following form,
-$$
-    Y(\omega) = Y^{(1)}(\omega) + Y^{(2)}(\omega) + Y^{(3)}(\omega)
-$$
-with,
-$$
-    Y^{(1)}(\omega) = \int_{-\infty}^{+\infty}\delta(\omega-\omega_1)H^{(1)}(\omega_1) U(\omega_1) \mathrm{d}\omega_1
-$$
-$$
-    Y^{(2)}(\omega) = \frac{1}{2\pi} \int_{- \infty}^{+ \infty} \int_{- \infty}^{+ \infty} \delta(\omega - \omega_1 - \omega_2)H^{(2)}(\omega_1,\omega_2)U(\omega_1)U(\omega_2)\mathrm{d}\omega_1\mathrm{d}\omega_2
-$$
-$$
-    Y^{(3)}(\omega) = \frac{1}{(2\pi)^{2}} \int_{- \infty}^{+ \infty} \int_{- \infty}^{+ \infty} \int_{- \infty}^{+ \infty} \delta(\omega - \omega_1 - \omega_2-\omega_3)H^{(3)}(\omega_1, \omega_2, \omega_3) U(\omega_1)U(\omega_2)U(\omega_3)   \mathrm{d}\omega_1 \mathrm{d}\omega_2 \mathrm{d}\omega_3
-$$
-where $H^{(1)}, H^{(2)}$ and $H^{(3)}$ are the linear, quadratic, and cubic GFRFs to be identified. Both the NARX and the Volterra representation express the same input-output relationship and as such are equivalent. In that regard, the two models formulate a residual whose value is minimized. Since the residual is linear in the GFRFs, the minimization admits a closed-form solution as follows. For two trial values for the $n$-th GFRF of interest, $H_0^{(n)}(\Omega_1,\cdots,\Omega_n)=0$ and $H_1^{(n)}(\Omega_1,\cdots,\Omega_n)=1$ time-domain residual equations are computed,
-where $H^{(1)}, H^{(2)}$ and $H^{(3)}$ are the linear, quadratic, and cubic GFRFs to be identified. Both the NARX and the Volterra representation express the same input-output relationship and as such are equivalent. Consequently, the GFRFs in Eq.~ The present software computes the GFRFs based on input-output data, $u(t)$ and $y(t)$, provided by the user. The technical details of this computation are presented in the theoretical basis for this software published in [@stamenov_numerical_2025].
 
 # AI usage disclosure
 No artificial intelligence or automated code-generation tools were utilized in the development, writing, or testing of the accompanying software.
