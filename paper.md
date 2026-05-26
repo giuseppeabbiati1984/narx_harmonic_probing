@@ -40,17 +40,17 @@ Nonlinear engineering systems exhibit frequency intermodulation, whereby energy 
 
 # Statement of need
 
-Engineering systems are often approximated by linear models, which can provide an adequate representation of the underlying dynamics over a limited operating range. A defining property of linear systems is that each frequency component present in the input appears in the output at the same frequency, modified only in amplitude and phase according to the linear frequency response function. Many natural and engineered systems, however, exhibit nonlinear behavior. In such systems, energy may be transferred between frequencies, producing response components at frequencies that are not present in the input. This phenomenon, commonly referred to as frequency intermodulation, is observed in a broad range of engineering applications, including hydrodynamic low-frequency and high-frequency loads \cite{sauder_empirical_2021, stansberg_cross-bi-spectral_1994}, geometrically nonlinear vibrations \cite{Lacarbonara_nonlinear_2007}, cracked beam-like structural elements \cite{Surace_detecting_2011}, nonlinear aeroelastic bridge response under turbulent wind excitation \cite{Chen_aeroelastic_2003, Kravrakov_comparative_2017}, among many other. \par
+Engineering systems are often approximated by linear models, which can provide an adequate representation of the underlying dynamics over a limited operating range. A defining property of linear systems is that each frequency component present in the input appears in the output at the same frequency, modified only in amplitude and phase according to the linear frequency response function. Many natural and engineered systems, however, exhibit nonlinear behavior. In such systems, energy may be transferred between frequencies, producing response components at frequencies that are not present in the input. This phenomenon, commonly referred to as frequency intermodulation, is observed in a broad range of engineering applications, including hydrodynamic low-frequency and high-frequency loads [@sauder_empirical_2021, @stansberg_cross-bi-spectral_1994], geometrically nonlinear vibrations [@Lacarbonara_nonlinear_2007], cracked beam-like structural elements [@Surace_detecting_2011], nonlinear aeroelastic bridge response under turbulent wind excitation [@Chen_aeroelastic_2003, @Kravrakov_comparative_2017], among many other. \par
 
 Since linear models do not predict intermodulated frequency components, they are insufficient for analyzing the above-mentioned natural phenomena. As a result, engineers and scientists have been focused on developing and improving methods for analyzing nonlinear systems. \par
 
-An important nonlinear system identification approach relies on the functional series of Volterra and Wiener \cite{billings_identification_1980, schetzen_1980_volterra}. The theoretical basis for these methods was founded by the pioneering works of Volterra, who introduced the theory of analytical functions \cite{volterra_sopra_1887} and later Frechet, who used it to represent continuous nonlinear systems \cite{frechet_sur_1910}. The early efforts of identifying nonlinear models, notably the works of Wiener, Bose, and Barrett \cite{wiener_nonlinear_1958, bose_theory_1956, barrett_hermite_1964}, revolved around a direct estimation of the Volterra kernels, also referred to as generalized frequency response functions (GFRFs), from measured data. However, estimating GFRFs directly from raw data requires a large number of identified parameters, namely kernel points, to adequately represent the Volterra kernels, and consequently demands large amounts of input–output measurement data. \par
+An important nonlinear system identification approach relies on the functional series of Volterra and Wiener [@billings_identification_1980, @schetzen_1980_volterra]. The theoretical basis for these methods was founded by the pioneering works of Volterra, who introduced the theory of analytical functions [@volterra_sopra_1887] and later Frechet, who used it to represent continuous nonlinear systems [@frechet_sur_1910]. The early efforts of identifying nonlinear models, notably the works of Wiener, Bose, and Barrett [@wiener_nonlinear_1958, @bose_theory_1956, @barrett_hermite_1964], revolved around a direct estimation of the Volterra kernels, also referred to as generalized frequency response functions (GFRFs), from measured data. However, estimating GFRFs directly from raw data requires a large number of identified parameters, namely kernel points, to adequately represent the Volterra kernels, and consequently demands large amounts of input–output measurement data. \par
 %
-A practical remedy to this is to identify the Volterra kernels indirectly by applying \emph{harmonic probing} \cite{bedrosian_output_1971} to data-driven mathematical input–output models. In this way, the kernels are not identified pointwise, but are instead characterized through a comparatively small set of trained model coefficients. Among the most widely used model classes for this purpose is the NARMAX model (nonlinear autoregressive moving average model with exogenous inputs) \cite{Billings_1985_partI, Billings_1985_partII, billings_nonlinear_2013}, together with the frequently adopted simpler NARX model \cite{chen_non-linear_1990}, in which the stochastic component is represented as additive noise acting only at the system output. \par
+A practical remedy to this is to identify the Volterra kernels indirectly by applying \emph{harmonic probing} [@bedrosian_output_1971] to data-driven mathematical input–output models. In this way, the kernels are not identified pointwise, but are instead characterized through a comparatively small set of trained model coefficients. Among the most widely used model classes for this purpose is the NARMAX model (nonlinear autoregressive moving average model with exogenous inputs) [@Billings_1985_partI, @Billings_1985_partII, @billings_nonlinear_2013], together with the frequently adopted simpler NARX model [@chen_non-linear_1990], in which the stochastic component is represented as additive noise acting only at the system output. \par
 %
-The harmonic probing method is traditionally carried out either through manual derivations or with the aid of symbolic toolboxes, both of which are subject to practical limitations in terms of scalability, efficiency, and ease of implementation. To address these limitations, the authors developed a numerical formulation of the harmonic probing method \cite{stamenov_numerical_2025} which provides the core theoretical foundation behind the software presented here. \par
+The harmonic probing method is traditionally carried out either through manual derivations or with the aid of symbolic toolboxes, both of which are subject to practical limitations in terms of scalability, efficiency, and ease of implementation. To address these limitations, the authors developed a numerical formulation of the harmonic probing method [@stamenov_numerical_2025] which provides the core theoretical foundation behind the software presented here. \par
 
-The software enables efficient analysis of complex nonlinear systems for which developing an explicit physical model is impractical, but representative input–output data can be measured. The user provides measured input and output data, defines the NARX model settings, the operational frequency grid, and the software performs the complete workflow from data preparation to model fitting, numerical probing, and visualization of the resulting GFRFs. A preliminary implementation of the software has been applied and experimentally validated for the identification of nonlinear hydrodynamic loading models \cite{stamenov_comparison_2025}.
+The software enables efficient analysis of complex nonlinear systems for which developing an explicit physical model is impractical, but representative input–output data can be measured. The user provides measured input and output data, defines the NARX model settings, the operational frequency grid, and the software performs the complete workflow from data preparation to model fitting, numerical probing, and visualization of the resulting GFRFs. A preliminary implementation of the software has been applied and experimentally validated for the identification of nonlinear hydrodynamic loading models [@stamenov_comparison_2025].
 
 # State of the field                                                                                                                  
 
@@ -79,20 +79,17 @@ and usability through its Python interface.
 
 # Software design
 
-\subsection{Software architecture}
-The software is a MATLAB implementation for estimating generalized frequency response functions from time-series data using the numerical harmonic probing framework described in \cite{stamenov_numerical_2025}. The software is organized as sequential blocks starting from measured input-output data and ending with estimated GFRFs. The process consists of four main layers: data preparation, model fitting, numerical probing, and visualization. Figure~\ref{fig:method_sequence} shows the sequence of operations starting from a nonlinear system of interest and concluding with the GFRFs.
-\begin{figure} [htb]
-    \centering
-    \includegraphics[width=1.1\linewidth]{Figures/method_sequence.png}
-    \caption{Workflow from measured input–output data of a nonlinear system to its frequency-domain representation. The process includes data preparation, model fitting, numerical harmonic probing, and visualization of the resulting GFRFs.}
-    \label{fig:method_sequence}
-\end{figure} 
-%
-\subsection*{Data preparation}
+## Software architecture
+The software is a MATLAB implementation for estimating generalized frequency response functions from time-series data using the numerical harmonic probing framework described in [citation]. The software is organized as sequential blocks starting from measured input-output data and ending with estimated GFRFs. [Figure 1](#fig-method-sequence) shows the sequence of operations starting from a nonlinear system of interest and concluding with the GFRFs.
+<a id="fig-method-sequence"></a>
+![Workflow from measured input-output data of a nonlinear system to its frequency-domain representation.](Figures/method_sequence.png)
+**Figure 1.** Workflow from measured input-output data of a nonlinear system to its frequency-domain representation. The process includes data preparation, model fitting, numerical harmonic probing, and visualization of the resulting GFRFs.
+
+## Data preparation
 In this stage, the measured input and output signals are prepared to ensure that they are suitable for nonlinear model fitting and subsequent probing. The raw time series data are resampled to a user-specified sampling rate and arranged into data segments of a user-prescribed length. To improve numerical conditioning and make the fitted coefficients comparable across datasets, the signals are normalized with respect to their standard deviations. The corresponding scaling factors are stored and later used to recover the transfer functions in physical units after probing.
-%
-\subsection*{Model fitting}
-In the second stage, the measured input-output relationship is represented by a polynomial NARX model. The settings of the NARX model are defined by the number of lags on the input and output and the order of the model, all of which are input by the user. The polynomial NARX model is fitted by first assembling a regression matrix containing all candidate monomials constructed from the selected lagged input and output samples up to the prescribed polynomial order. Since this candidate set may become large and highly redundant, the coefficient vector is estimated using LASSO regularization \cite{tibshirani_regression_1996}. Specifically, the fitting problem is formulated as the minimization of the one-step-ahead prediction error augmented by an \(\ell_1\)-penalty on the model coefficients. This penalty promotes sparsity by shrinking weak or non-informative terms to zero, thereby performing coefficient estimation and regressor selection simultaneously. The resulting sparse polynomial NARX model retains only the dominant terms needed to describe the nonlinear input-output relationship, which improves robustness and interpretability and provides a compact basis for the subsequent numerical harmonic probing procedure.
+
+## Model fitting
+In the second stage, the measured input-output relationship is represented by a polynomial NARX model. The settings of the NARX model are defined by the number of lags on the input and output and the order of the model, all of which are input by the user. The polynomial NARX model is fitted by first assembling a regression matrix containing all candidate monomials constructed from the selected lagged input and output samples up to the prescribed polynomial order. Since this candidate set may become large and highly redundant, the coefficient vector is estimated using LASSO regularization [@tibshirani_regression_1996}. Specifically, the fitting problem is formulated as the minimization of the one-step-ahead prediction error augmented by an \(\ell_1\)-penalty on the model coefficients. This penalty promotes sparsity by shrinking weak or non-informative terms to zero, thereby performing coefficient estimation and regressor selection simultaneously. The resulting sparse polynomial NARX model retains only the dominant terms needed to describe the nonlinear input-output relationship, which improves robustness and interpretability and provides a compact basis for the subsequent numerical harmonic probing procedure.
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth]{Figures/NARX_fit.png}
@@ -100,12 +97,12 @@ In the second stage, the measured input-output relationship is represented by a 
     \label{fig:NARX fit}
 \end{figure}
 
-\subsection*{Numerical harmonic probing}
+## Numerical harmonic probing
 Once the NARX model is available, the rest of the workflow is independent of the particular physical system that generated the data. The fitted polynomial NARX model is transformed from a time-domain representation into a frequency-domain description by recursively estimating the generalized frequency response functions. A discrete probing frequency grid is first defined, after which the GFRFs are computed sequentially. At each selected frequency combination, the software constructs a trial harmonic response, inserts it into the polynomial model, and evaluates the resulting residual at the target output frequency. Since this residual depends linearly on the unknown transfer function value, the latter can be recovered numerically from a small number of residual evaluations, without deriving symbolic harmonic balance expressions. In this way, the probing stage systematically maps the fitted nonlinear input-output model into a set of frequency response functions that quantify the dynamics of the system of interest.
-%
-\subsection*{GFRF visualization}
+
+## GFRF visualization
 Lastly, the estimated GFRFs are organized and displayed to enable direct interpretation of the identified nonlinear dynamics. After the probing has been completed for all data segments, the software computes summary statistics, such as the mean and standard deviation of the estimated transfer functions across segments, in order to assess the consistency and robustness of the results. The quantities are then plotted over the user-defined probing frequency domain, by showing the identified response together with uncertainty bands. For higher-order transfer functions, selected diagonals or slices of the multidimensional frequency domain may be visualized to highlight dominant interaction patterns in a compact and interpretable form.
-%
+
 \begin{figure} [H]
     \centering
     \includegraphics[width=1\linewidth]{Figures/flowchart_HP.png}
@@ -126,9 +123,7 @@ Because the probing is performed numerically and recursively, the framework is a
 The core functionality of the software is to identify GFRFs from time-domain input-output data. The method assumes that no explicit physics-based representation, such as an equation of motion, is available for the underlying system. Consequently, the system dynamics are first approximated using a data-driven input–output model, which provides the basis for the subsequent extraction of GFRFs. The model prescribed in this software is a polynomial NARX extended to 3-rd order with the following form,
 ```math
 \begin{gather}
-%y\left(k\right) = 
 \nonumber F\left( \mathbf{x}\left(k\right) \right) = \sum_{j_1 = 1}^{r} {C}^{(1)}_{j_1} {x}_{j_1}\left(k\right) + \sum_{j_1 = 1}^{r}  \sum_{j_2 = j_1}^{r} {C}^{(2)}_{j_1, j_2} {x}_{j_1}\left(k\right) {x}_{j_2}\left(k\right) + \\\sum_{j_1 = 1}^{r}  \sum_{j_2 = j_1}^{r}  \sum_{j_3 = j_2}^{r} {C}^{(3)}_{j_1,j_2,j_3} {x}_{j_1}\left(k\right) {x}_{j_2}\left(k\right) {x}_{j_3}\left(k\right)
- \label{eq:NARX_n}
 \end{gather}
 ```
 with,
@@ -142,29 +137,29 @@ with,
 \end{equation}
 ```
 where $r=r_y+r_u+1$, and $C^{(1)},C^{(2)},C^{(3)}$ are arrays of training coefficients identified from data. The coefficients of the NARX model do not hold any tangible physical meaning which makes the model difficult to inspect. The Volterra series is an alternative and generic representation of nonlinear input-output models. The frequency-domain Volterra series response up to third order takes the following form,
-
 ```math
-\begin{equation} \label{eq:vdec_freq}
-Y(\omega) = Y^{(1)}(\omega) + Y^{(2)}(\omega) + Y^{(3)}(\omega)
+\begin{equation} 
+    Y(\omega) = Y^{(1)}(\omega) + Y^{(2)}(\omega) + Y^{(3)}(\omega)
 \end{equation}
 ```
 with,
 ```math
-\begin{equation}  \label{eq:vdec_freq1}
+\begin{equation}  
     Y^{(1)}(\omega) = \int_{-\infty}^{+\infty}\delta(\omega-\omega_1)H^{(1)}(\omega_1) U(\omega_1) \mathrm{d}\omega_1
 \end{equation}
 ```
 ```math
-\begin{equation} \label{eq:vdec_freq2}
+\begin{equation} 
     Y^{(2)}(\omega) = \frac{1}{2\pi} \int_{- \infty}^{+ \infty} \int_{- \infty}^{+ \infty} \delta(\omega - \omega_1 - \omega_2)H^{(2)}(\omega_1,\omega_2)U(\omega_1)U(\omega_2)\mathrm{d}\omega_1\mathrm{d}\omega_2
  \end{equation}
-\begin{equation} \label{eq:vdec_freqm}
-Y^{(3)}(\omega) = \frac{1}{(2\pi)^{2}} \int_{- \infty}^{+ \infty} \int_{- \infty}^{+ \infty} \int_{- \infty}^{+ \infty} \delta(\omega - \omega_1 - \omega_2-\omega_3)H^{(3)}(\omega_1, \omega_2, \omega_3) U(\omega_1)U(\omega_2)U(\omega_3)   \mathrm{d}\omega_1 \mathrm{d}\omega_2 \mathrm{d}\omega_3
+```
+```math
+\begin{equation}
+    Y^{(3)}(\omega) = \frac{1}{(2\pi)^{2}} \int_{- \infty}^{+ \infty} \int_{- \infty}^{+ \infty} \int_{- \infty}^{+ \infty} \delta(\omega - \omega_1 - \omega_2-\omega_3)H^{(3)}(\omega_1, \omega_2, \omega_3) U(\omega_1)U(\omega_2)U(\omega_3)   \mathrm{d}\omega_1 \mathrm{d}\omega_2 \mathrm{d}\omega_3
 \end{equation}
 ```
 where $H^{(1)}, H^{(2)}$ and $H^{(3)}$ are the linear, quadratic, and cubic GFRFs to be identified. Both the NARX and the Volterra representation express the same input-output relationship and as such are equivalent. In that regard, the two models formulate a residual whose value is minimized. Since the residual is linear in the GFRFs, the minimization admits a closed-form solution as follows. For two trial values for the $n$-th GFRF of interest, $H_0^{(n)}(\Omega_1,\cdots,\Omega_n)=0$ and $H_1^{(n)}(\Omega_1,\cdots,\Omega_n)=1$ time-domain residual equations are computed,
-where $H^{(1)}, H^{(2)}$ and $H^{(3)}$ are the linear, quadratic, and cubic GFRFs to be identified. Both the NARX and the Volterra representation express the same input-output relationship and as such are equivalent. Consequently, the GFRFs in Eq.~ The present software computes the GFRFs based on input-output data, $u(t)$ and $y(t)$, provided by the user. The technical details of this computation are presented in the theoretical basis for this software published in \cite{stamenov_numerical_2025}.
-
+where $H^{(1)}, H^{(2)}$ and $H^{(3)}$ are the linear, quadratic, and cubic GFRFs to be identified. Both the NARX and the Volterra representation express the same input-output relationship and as such are equivalent. Consequently, the GFRFs in Eq.~ The present software computes the GFRFs based on input-output data, $u(t)$ and $y(t)$, provided by the user. The technical details of this computation are presented in the theoretical basis for this software published in [@stamenov_numerical_2025].
 
 # Citations
 
@@ -180,14 +175,6 @@ For a quick reference, the following citation commands can be used:
 - `[@author:2001]` -> "(Author et al., 2001)"
 - `[@author1:2001; @author2:2001]` -> "(Author1 et al., 2001; Author2 et al., 2002)"
 
-# Figures
-
-Figures can be included like this:
-![Workflow from measured input-output data of a nonlinear system to its frequency-domain representation.](Figures/method_sequence.png)
-and referenced from text using \autoref{fig:example}.
-
-Figure sizes can be customized by adding an optional second parameter:
-![Caption for example figure.](figure.png){ width=20% }
 
 # AI usage disclosure
 
