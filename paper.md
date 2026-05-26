@@ -95,17 +95,13 @@ In the second stage, the measured input-output relationship is represented by a 
 **Figure 2.** Workflow for the fitting of the NARX model.
 
 ## Numerical harmonic probing
-Once the NARX model is available, the rest of the workflow is independent of the particular physical system that generated the data. The fitted polynomial NARX model is transformed from a time-domain representation into a frequency-domain description by recursively estimating the generalized frequency response functions. A discrete probing frequency grid is first defined, after which the GFRFs are computed sequentially. At each selected frequency combination, the software constructs a trial harmonic response, inserts it into the polynomial model, and evaluates the resulting residual at the target output frequency. Since this residual depends linearly on the unknown transfer function value, the latter can be recovered numerically from a small number of residual evaluations, without deriving symbolic harmonic balance expressions. In this way, the probing stage systematically maps the fitted nonlinear input-output model into a set of frequency response functions that quantify the dynamics of the system of interest.
+Once the NARX model is available, the rest of the workflow is independent of the particular physical system that generated the data. The fitted polynomial NARX model is transformed from a time-domain representation into a frequency-domain description by recursively estimating the generalized frequency response functions. A discrete probing frequency grid is first defined, after which the GFRFs are computed sequentially. At each selected frequency combination, the software constructs a trial harmonic response, inserts it into the polynomial model, and evaluates the resulting residual at the target output frequency. Since this residual depends linearly on the unknown transfer function value, the latter can be recovered numerically from a small number of residual evaluations, without deriving symbolic harmonic balance expressions. In this way, the probing stage systematically maps the fitted nonlinear input-output model into a set of frequency response functions that quantify the dynamics of the system of interest.  [Figure 3](#fig-flowchart-HP) shows a block diagram of the numerical harmonic probing procedure up to third order. 
+<a id="fig-flowchart-HP"></a>
+![Workflow for the numerical harmonic probing up to third-order.](Figures/flowchart_HP.png)
+**Figure 3.** Workflow for the numerical harmonic probing up to third-order.
 
 ## GFRF visualization
 Lastly, the estimated GFRFs are organized and displayed to enable direct interpretation of the identified nonlinear dynamics. After the probing has been completed for all data segments, the software computes summary statistics, such as the mean and standard deviation of the estimated transfer functions across segments, in order to assess the consistency and robustness of the results. The quantities are then plotted over the user-defined probing frequency domain, by showing the identified response together with uncertainty bands. For higher-order transfer functions, selected diagonals or slices of the multidimensional frequency domain may be visualized to highlight dominant interaction patterns in a compact and interpretable form.
-
-\begin{figure} [H]
-    \centering
-    \includegraphics[width=1\linewidth]{Figures/flowchart_HP.png}
-    \caption{Workflow for the numerical harmonic probing up to third-order.}
-    \label{fig:flowchart_HP}
-\end{figure}
 
 # Research impact statement
 
