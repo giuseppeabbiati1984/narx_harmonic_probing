@@ -132,6 +132,7 @@ The core functionality of the software is to identify GFRFs from time-domain inp
 \end{gather}
 ```
 with,
+```math
 \begin{equation}
     \mathbf{x}(k) =
     \big[
@@ -139,28 +140,31 @@ with,
     u(k), \dots, u(k-r_u)
     \big],
 \end{equation}
+```
 where $r=r_y+r_u+1$, and $C^{(1)},C^{(2)},C^{(3)}$ are arrays of training coefficients identified from data. The coefficients of the NARX model do not hold any tangible physical meaning which makes the model difficult to inspect. The Volterra series is an alternative and generic representation of nonlinear input-output models. The frequency-domain Volterra series response up to third order takes the following form,
-%
+
+```math
 \begin{equation} \label{eq:vdec_freq}
 Y(\omega) = Y^{(1)}(\omega) + Y^{(2)}(\omega) + Y^{(3)}(\omega)
 \end{equation}
-%
+```
 with,
+```math
 \begin{equation}  \label{eq:vdec_freq1}
     Y^{(1)}(\omega) = \int_{-\infty}^{+\infty}\delta(\omega-\omega_1)H^{(1)}(\omega_1) U(\omega_1) \mathrm{d}\omega_1
 \end{equation}
-%
+```
+```math
 \begin{equation} \label{eq:vdec_freq2}
     Y^{(2)}(\omega) = \frac{1}{2\pi} \int_{- \infty}^{+ \infty} \int_{- \infty}^{+ \infty} \delta(\omega - \omega_1 - \omega_2)H^{(2)}(\omega_1,\omega_2)U(\omega_1)U(\omega_2)\mathrm{d}\omega_1\mathrm{d}\omega_2
  \end{equation}
- %
 \begin{equation} \label{eq:vdec_freqm}
 Y^{(3)}(\omega) = \frac{1}{(2\pi)^{2}} \int_{- \infty}^{+ \infty} \int_{- \infty}^{+ \infty} \int_{- \infty}^{+ \infty} \delta(\omega - \omega_1 - \omega_2-\omega_3)H^{(3)}(\omega_1, \omega_2, \omega_3) U(\omega_1)U(\omega_2)U(\omega_3)   \mathrm{d}\omega_1 \mathrm{d}\omega_2 \mathrm{d}\omega_3
 \end{equation}
-
-% where $H^{(1)}, H^{(2)}$ and $H^{(3)}$ are the linear, quadratic, and cubic GFRFs to be identified. Both the NARX and the Volterra representation express the same input-output relationship and as such are equivalent. In that regard, the two models formulate a residual whose value is minimized. Since the residual is linear in the GFRFs, the minimization admits a closed-form solution as follows. For two trial values for the $n$-th GFRF of interest, $H_0^{(n)}(\Omega_1,\cdots,\Omega_n)=0$ and $H_1^{(n)}(\Omega_1,\cdots,\Omega_n)=1$ time-domain residual equations are computed,
+```
+where $H^{(1)}, H^{(2)}$ and $H^{(3)}$ are the linear, quadratic, and cubic GFRFs to be identified. Both the NARX and the Volterra representation express the same input-output relationship and as such are equivalent. In that regard, the two models formulate a residual whose value is minimized. Since the residual is linear in the GFRFs, the minimization admits a closed-form solution as follows. For two trial values for the $n$-th GFRF of interest, $H_0^{(n)}(\Omega_1,\cdots,\Omega_n)=0$ and $H_1^{(n)}(\Omega_1,\cdots,\Omega_n)=1$ time-domain residual equations are computed,
 where $H^{(1)}, H^{(2)}$ and $H^{(3)}$ are the linear, quadratic, and cubic GFRFs to be identified. Both the NARX and the Volterra representation express the same input-output relationship and as such are equivalent. Consequently, the GFRFs in Eq.~ The present software computes the GFRFs based on input-output data, $u(t)$ and $y(t)$, provided by the user. The technical details of this computation are presented in the theoretical basis for this software published in \cite{stamenov_numerical_2025}.
-%
+
 
 # Citations
 
@@ -179,7 +183,7 @@ For a quick reference, the following citation commands can be used:
 # Figures
 
 Figures can be included like this:
-![Workflow from measured input–output data of a nonlinear system to its frequency-domain representation. The process includes data preparation, model fitting, numerical harmonic probing, and visualization of the resulting GFRFs.\label{fig:method_sequence}](Figures/method_sequence.png.png)
+![Workflow from measured input-output data of a nonlinear system to its frequency-domain representation.](Figures/method_sequence.png)
 and referenced from text using \autoref{fig:example}.
 
 Figure sizes can be customized by adding an optional second parameter:
