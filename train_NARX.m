@@ -57,9 +57,9 @@ a_ls = pinv(p)*y ;
 
 rng(6) ; % For reproducibility
 if numel(varargin) > 0
-    [B, FitInfo] = lasso(p, y, CV=5, Lambda=Lamb_val, Intercept = false) ;						% Specify the penalty value
+    [B, FitInfo] = lasso(p, y, CV=5, Lambda=Lamb_val, Intercept = false, Standardize = false) ;			% Specify the penalty value
 elseif numel(varargin) == 0
-   [B, FitInfo] = lasso(p, y, CV=5, NumLambda=200, Intercept = false, RelTol=1e-4) ;				% Use a range of penalty values
+   [B, FitInfo] = lasso(p, y, CV=5, NumLambda=200, Intercept = false, RelTol=1e-4, Standardize = false) ;	% Use a range of penalty values
     % [B, FitInfo] = lasso(p, y, CV=5, NumLambda=1000, Intercept = false, RelTol=1e-4, DFmax = 10) ;		% DFmax = number of nonzero terms
     % [B, FitInfo] = lasso(p, y, CV=5, LambdaRatio=0.1, NumLambda=400, Intercept = false, RelTol=1e-4) ;	% LambdaRatio =smallest/largest lambda value in the sequence
     % [B, FitInfo] = lasso(p, y, CV=5, Lambda=linspace(0.001, 1, 1000), Intercept = false, RelTol=1e-4) ;
@@ -73,7 +73,7 @@ nonzero_indices = a_lasso~=0 ;
 
 % sparsity
 % sum(nonzero_indices)/numel(nonzero_indices) 
-sum(nonzero_indices) 
+% sum(nonzero_indices)  
 %% estimation of Jacobian and Hessian for multiple segments (boostrap)
 % A NARX model is estimated for each segment considering the model
 % structure produced by the LASSO regression on the entire dataset.

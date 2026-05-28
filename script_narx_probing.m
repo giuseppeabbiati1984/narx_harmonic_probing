@@ -22,7 +22,7 @@ load duff_output_data.mat % load the output data generated from "script_data_gen
 ry = 3 ; % max lagged samples on output (k-1, ..., k-ry)
 ru = 3 ; % max lagged samples on input  (k-0, ..., k-ru )
 ord = "3" ; % order of the poly-NARX
-numSeg = 10; % number of segments ( >1 )
+numSeg = 5; % number of segments ( >1 )
 lenSeg = 100 ; % number of points in each segment
 dts = 0.005 ; % subsampling time step(s) for NARX [s]  
 
@@ -114,7 +114,6 @@ H3_exact = interp3(w_dbl_course, w_dbl_course, w_dbl_course,H3_course, X_int,  Y
 w_dbl_exact = -freq_max:1:freq_max; %frequency axis used for comparison in the plots
 
 
-
 %% -------------------------------------------------Plot LTF-------------------------------------------------
 close all ;
 PlotFontSize = 22 ;
@@ -176,11 +175,6 @@ x_plot =[w1, fliplr(w1)];
      ylabel('$\Im(H^{(1)})$','Interpreter','latex')
      set(gca, 'FontSize',  PlotFontSize) ;
 
-     folder = "C:\Users\AU657332\OneDrive - Aarhus universitet\Giuseppe Abbiatis filer - david_stamenov\dissemination\MethodsX" ;  % your target folder
-     filename = strcat("H1.eps");  % filename
-     fullpath = fullfile(folder, filename);  % create full path
-
-     % print(gcf, '-depsc', fullpath);	% save as color EPS
 %% ------------------------------------Plot Diagonal of QTF-------------------------------------------------
 
 H2_sol = zeros(size(Y, 2),numel(w1)-diag_offset) ;
@@ -254,11 +248,7 @@ y_plot3=[H2_3std(1, :), fliplr(H2_3std(2, :))] ;
      set(gca, 'FontSize',  PlotFontSize) ;
      % legend([h1, h1_qtf, f_qtf], {'Harmonic Probing', "Theoretical", strcat(num2str(NumStd), ' std. dev') }, 'location', 'northeast',"FontSize",PlotFontSize-7) ;
 
-     folder = "C:\Users\AU657332\OneDrive - Aarhus universitet\Giuseppe Abbiatis filer - david_stamenov\dissemination\MethodsX" ;  % your target folder
-     filename = strcat("H2.eps");  % filename
-     fullpath = fullfile(folder, filename);  % create full path
 
-     % print(gcf, '-depsc', fullpath);	% save as color EPS
 %% ----------------------------------- Plot Diagonal of CTF-------------------------------------------------
 ax1 = w1(2):dw_res:w1(end)-3*dw_res*diag_offset ; % comparison axis 1
 ax2 = ax1+diag_offset*dw_res ; % comparison axis 2
@@ -347,9 +337,3 @@ y_plot3=[H3_3std(1, :), fliplr(H3_3std(2, :))] ;
      xlabel('$\omega_1$ [rad/s]','Interpreter','latex')
      ylabel('$\Im(H^{(3)})$','Interpreter','latex')
      set(gca, 'FontSize',  PlotFontSize) ;
-
-     folder = "C:\Users\AU657332\OneDrive - Aarhus universitet\Giuseppe Abbiatis filer - david_stamenov\dissemination\MethodsX" ;  % your target folder
-     filename = strcat("H3.eps");  % filename
-     fullpath = fullfile(folder, filename);  % create full path
-
-     % print(gcf, '-depsc', fullpath);	% save as color EPS

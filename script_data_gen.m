@@ -39,7 +39,7 @@ yr = yr(:);
 save duff_input_data.mat tr ur
 save duff_output_data.mat tr yr
 
-return
+
 %% Synthetich data plot
 PlotFontSize = 22;
 
@@ -58,10 +58,4 @@ xlabel('$t$','Interpreter','latex')
 ylabel('$y(t)$','Interpreter','latex')
 set(gca, 'FontSize',  PlotFontSize) ;
 
-
-folder = "C:\Users\AU657332\OneDrive - Aarhus universitet\Giuseppe Abbiatis filer - david_stamenov\dissemination\MethodsX" ;  % your target folder
-filename = strcat("synth_data.eps");  % filename
-fullpath = fullfile(folder, filename);  % create full path
-
-% print(gcf, '-depsc', fullpath);	% save as color EPS
-
+return
