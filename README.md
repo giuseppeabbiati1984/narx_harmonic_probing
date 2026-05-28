@@ -13,16 +13,25 @@ This project is licensed under the terms of the MIT license.
 
 The code demonstrates the following workflow:
 
-1. Generate synthetic data from a Duffing oscillator.
-2. Segment the data for polynomial NARX model training.
-3. Train one polynomial NARX model for each data segment.
-4. Extract the first-, second-, and third-order NARX coefficient arrays.
-5. Apply numerical harmonic probing to estimate:
-   - the linear transfer function, `H1`;
-   - the quadratic transfer function, `H2`;
-   - the cubic transfer function, `H3`.
-6. Compare the estimated transfer functions against analytical Duffing oscillator solutions.
-7. Plot real and imaginary parts of the estimated and theoretical transfer functions.
+1. Generate synthetic data from a Duffing oscillator. (Run "script_data_gen.m")
+2. Segment the data for polynomial NARX model training. (Run "script_narx_probing.m")
+3. Train one polynomial NARX model for each data segment.                                          
+4. Extract the first-, second-, and third-order NARX coefficient arrays.                           
+5. Apply numerical harmonic probing to estimate:                                                   
+   - the linear transfer function, `H1`;                                                           
+   - the quadratic transfer function, `H2`;                                                        
+   - the cubic transfer function, `H3`.                                                            
+6. Compare the estimated transfer functions against analytical Duffing oscillator solutions.       
+7. Plot real and imaginary parts of the estimated and theoretical transfer functions. 
+
+## Toolboxes
+The code requires the following MATLAB toolboxes:
+- Statistics and Machine Learning
+- DSP System Toolbox
+- Signal Processing
+- 
+The code has been verified with MATLAB R2025a
+
 
 ## Repository Structure
 
