@@ -34,8 +34,7 @@ bibliography: paper.bib
 ---
 
 # Summary
-
-Nonlinear systems exhibit frequency intermodulation, whereby energy present in the input spectrum is transferred to additional frequency components in the system response. Such behavior cannot be represented by linear frequency response functions and instead requires higher-order frequency-domain descriptions, such as generalized frequency response functions (GFRFs) derived from Volterra-series theory. Harmonic probing aims at extracting these functions from nonlinear input–output models. This software presents a MATLAB code implementation for estimating GFRFs from polynomial nonlinear autoregressive exogeneous (NARX) models trained on measured input–output data. The method is formulated as a recursive numerical procedure in which harmonic balance residuals are evaluated directly at selected probing frequencies.
+Nonlinear systems exhibit frequency intermodulation, that is, energy present in the input spectrum is transferred to additional frequency components in the system response. Such behavior cannot be represented by linear models and instead requires higher-order modeling techniques, such as generalized frequency response functions (GFRFs) derived from Volterra-series theory. GFRFs provide a frequency-domain description of the nonlinear input–output relationship of a system. Because they can be inspected visually, they offer an intuitive way to identify important dynamic features, such as resonant regions and frequency interactions, that may not be apparent from time-domain data alone. This software presents a MATLAB code implementation for estimating GFRFs from polynomial nonlinear autoregressive exogeneous (NARX) models trained on measured input–output data. The method is formulated as a recursive numerical procedure in which residuals are evaluated directly at selected probing frequencies which enables an efficient and fully numerical extraction of the system's GFRFs.
 
 # Statement of need
 
