@@ -12,7 +12,6 @@ rng(10, 'twister') ;
 % iii) Computes LTF, QTF, and CTF using the numerical harmonic probing algorithm
 % iv) Compares against the theoretical solutions for the Duffing oscillator
 
-
 %% #####################USER INPUT##########################
 % -----------------Load input output data----------------------------------------------------------------------------
 load duff_input_data.mat % load the input data generated from "script_data_gen"
@@ -33,7 +32,6 @@ w_max = 120; % end frequency on the probing axis
 diag_offset = 1; % diagonal to plot (for order > 1)  
 w1 = w_min:dw_res:floor(w_max/dw_res)*dw_res ; % frequency axis of the H1, H2, H3
 recomp_TF = 0 ; % switch 0: use precomputed analytical transfer function results. 1: re-compute the results
-
 
 %% --------------------Data preparation + NARX fitting--------------------------------------------------
 
@@ -92,7 +90,6 @@ disp(strcat('HP of segment : ', num2str(i), '/', num2str(size(Y, 2)))) ;
     end
 
 end
-
 %% ----------------------------Compute/Load theoretical transfer functions------------------------------
 
 % Block to compute analytical transfer functions or load pre-computed data:
@@ -247,7 +244,6 @@ y_plot3=[H2_3std(1, :), fliplr(H2_3std(2, :))] ;
      ylabel('$\Im(H^{(2)})$','Interpreter','latex')
      set(gca, 'FontSize',  PlotFontSize) ;
      % legend([h1, h1_qtf, f_qtf], {'Harmonic Probing', "Theoretical", strcat(num2str(NumStd), ' std. dev') }, 'location', 'northeast',"FontSize",PlotFontSize-7) ;
-
 
 %% ----------------------------------- Plot Diagonal of CTF-------------------------------------------------
 ax1 = w1(2):dw_res:w1(end)-3*dw_res*diag_offset ; % comparison axis 1
